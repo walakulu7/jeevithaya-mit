@@ -6,7 +6,9 @@
 [![Course](https://img.shields.io/badge/Course-MIT%202025%2F2026-purple.svg)]()
 
 > **Master of Information Technology (MIT) Assignment**  
-> **Developed by:** Group 5 (MIT 2025/2026 Batch)
+> **Developed by:** Group 5 (MIT 2025/2026 Batch)  
+> 
+> 🚀 **Teammates & Friends:** Check the [**Team Setup & Onboarding Guide (SETUP_GUIDE_FOR_TEAM.md)**](SETUP_GUIDE_FOR_TEAM.md) to get the app running on your computer in under 5 minutes!
 
 ---
 
