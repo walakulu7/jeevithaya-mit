@@ -31,3 +31,4 @@ Desktop.ini
 # Static root if collected
 staticfiles/
 
+*.zip
