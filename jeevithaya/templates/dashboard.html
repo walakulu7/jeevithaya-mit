@@ -1,0 +1,138 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Jeevithaya | Dashboard</title>
+  <link rel="stylesheet" href="{% static 'css/style.css' %}" />
+</head>
+<body>
+  <div class="layout">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="side-brand">
+        <div class="logo small">JV</div>
+        <span>Jeevithaya</span>
+      </div>
+
+<nav class="menu">
+  <a class="menu-item active" href="dashboard.html" data-role="system_admin,hospital_admin,frontoffice_user,lab_assistant">Dashboard</a>
+
+  <a class="menu-item" href="donors.html" data-role="system_admin,hospital_admin,frontoffice_user,lab_assistant">Donors</a>
+  <a class="menu-item" href="patients.html" data-role="system_admin,hospital_admin,frontoffice_user,lab_assistant">Patients</a>
+
+  <a class="menu-item" href="requests.html" data-role="system_admin,hospital_admin,frontoffice_user,lab_assistant">Requests</a>
+
+  <a class="menu-item" href="inventory.html" data-role="system_admin,hospital_admin,lab_assistant">Inventory</a>
+
+  <a class="menu-item" href="donation.html" data-role="system_admin,lab_assistant">Donation</a>
+
+  <a class="menu-item" href="verification.html" data-role="system_admin,lab_assistant">Verification</a>
+
+  <a class="menu-item" href="disposal.html" data-role="system_admin,lab_assistant">Disposal</a>
+
+  <a class="menu-item" href="reports.html" data-role="system_admin,hospital_admin">Reports</a>
+
+  <a class="menu-item" href="create_user.html" data-role="system_admin">Create User</a>
+  <a class="menu-item" href="profile.html"
+   data-role="system_admin,hospital_admin,frontoffice_user,lab_assistant">
+   Profile
+  </a>
+  <a class="menu-item" href="presentation.html"
+   data-role="system_admin,hospital_admin,frontoffice_user,lab_assistant" target="_blank" style="color: #ef4444; font-weight: 600;">
+   📊 Slides Deck ↗
+  </a>
+</nav>
+
+
+      <button id="logoutBtn" class="btn btn-ghost logout">Logout</button>
+    </aside>
+
+    <!-- Main -->
+    <main class="main">
+      <!-- Topbar -->
+      <header class="topbar">
+        <div>
+          <h2 id="welcome">Dashboard</h2>
+          <p id="roleInfo" class="muted"></p>
+        </div>
+        <div class="user-chip">
+          <span id="userEmail"></span>
+        </div>
+      </header>
+
+      <!-- User Profile Card -->
+      <section class="card profile-card">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;">
+          <h3>User Profile</h3>
+          <a href="profile.html" class="btn btn-ghost" style="font-size: 14px; padding: 6px 12px;">Edit Profile</a>
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px;">
+          <div>
+            <p class="muted" style="font-size: 13px; margin-bottom: 4px;">Name</p>
+            <p style="font-weight: 600;" id="profileName">-</p>
+          </div>
+          <div>
+            <p class="muted" style="font-size: 13px; margin-bottom: 4px;">User ID</p>
+            <p style="font-weight: 600;" id="profileUserId">-</p>
+          </div>
+          <div>
+            <p class="muted" style="font-size: 13px; margin-bottom: 4px;">Email</p>
+            <p style="font-weight: 600;" id="profileEmail">-</p>
+          </div>
+          <div>
+            <p class="muted" style="font-size: 13px; margin-bottom: 4px;">Role</p>
+            <p style="font-weight: 600;" id="profileRole">-</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Cards -->
+      <section class="cards">
+        <div class="card stat">
+          <h3>Total Donors</h3>
+          <p class="count" id="donorCount">0</p>
+        </div>
+        <div class="card stat">
+          <h3>Active Requests</h3>
+          <p class="count" id="requestCount">0</p>
+        </div>
+        <div class="card stat">
+          <h3>Blood Units</h3>
+          <p class="count" id="unitCount">0</p>
+        </div>
+        <div class="card stat">
+          <h3>Urgent Cases</h3>
+          <p class="count danger" id="urgentCount">0</p>
+        </div>
+      </section>
+
+      <!-- Recent Table -->
+      <section class="card table-card">
+        <h3>Recent Blood Requests</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>Request ID</th>
+              <th>Blood Group</th>
+              <th>Type</th>
+              <th>Quantity</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="recentRequestsBody">
+            <tr>
+              <td colspan="5" style="text-align: center; padding: 20px; color: var(--muted);">No recent requests</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+    </main>
+  </div>
+
+  <script src="{% static 'js/rbac.js' %}"></script>
+  <script src="{% static 'js/api.js' %}"></script>
+  <script src="{% static 'js/dashboard.js' %}"></script>
+</body>
+</html>

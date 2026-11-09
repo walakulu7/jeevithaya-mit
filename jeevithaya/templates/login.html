@@ -1,0 +1,88 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Jeevithaya | Login</title>
+  <link rel="stylesheet" href="{% static 'css/style.css' %}" />
+</head>
+<body>
+  <div class="page">
+    <div class="card auth-card">
+      <div class="brand">
+        <div class="logo">JV</div>
+        <div>
+          <h1>Jeevithaya</h1>
+          <p class="muted">Centralized Blood & Plasma Management</p>
+        </div>
+      </div>
+
+      <h2 class="title">Login</h2>
+      <p class="subtitle">Select your role and sign in</p>
+
+      <form id="loginForm" class="form">
+        <label class="label">Role</label>
+        <div class="role-row">
+          <label class="chip">
+            <input type="radio" name="role" value="system_admin" checked />
+            <span>System Admin</span>
+          </label>
+          <label class="chip">
+            <input type="radio" name="role" value="hospital_admin" />
+            <span>Hospital Admin</span>
+          </label>
+          <label class="chip">
+            <input type="radio" name="role" value="frontoffice_user" />
+            <span>Front Office</span>
+          </label>
+          <label class="chip">
+            <input type="radio" name="role" value="lab_assistant" />
+            <span>Lab Assistant</span>
+          </label>
+        </div>
+
+        <label class="label" for="email">Email</label>
+        <input id="email" class="input" type="email" placeholder="name@example.com" required />
+
+        <label class="label" for="password">Password</label>
+        <div class="input-row">
+          <input id="password" class="input" type="password" placeholder="••••••••" required />
+          <button type="button" id="togglePwd" class="btn btn-ghost" aria-label="Toggle password">
+            Show
+          </button>
+        </div>
+
+        <div class="row">
+          <label class="check">
+            <input id="remember" type="checkbox" />
+            <span>Remember me</span>
+          </label>
+          <a class="link" href="#" id="forgotLink">Forgot password?</a>
+        </div>
+
+        <button class="btn btn-primary" type="submit">Sign In</button>
+
+        <div id="msg" class="msg" role="alert" aria-live="polite"></div>
+
+        <p class="hint">
+          Demo Users:<br/>
+          • System Admin: <b>admin@jeevithaya.com</b> / <b>admin123</b><br/>
+          • Hospital Admin: <b>hospital@jeevithaya.com</b> / <b>hospital123</b><br/>
+          • Front Office: <b>frontoffice@jeevithaya.com</b> / <b>front123</b><br/>
+          • Lab Assistant: <b>lab@jeevithaya.com</b> / <b>lab123</b>
+        </p>
+      </form>
+    </div>
+
+    <footer class="footer">
+      <span>© Jeevithaya | A System Designed & Developed By Group 5 MIT 2025 Batch </span>
+    </footer>
+  </div>
+
+  <script src="{% static 'js/api.js' %}"></script>
+  <script src="{% static 'js/login.js' %}"></script>
+  <script src="{% static 'js/rbac.js' %}"></script>
+</body>
+</html>

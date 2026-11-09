@@ -1,0 +1,132 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Jeevithaya | Blood Disposal</title>
+  <link rel="stylesheet" href="{% static 'css/style.css' %}" />
+</head>
+<body>
+  <div class="layout">
+
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="side-brand">
+        <div class="logo small">JV</div>
+        <span>Jeevithaya</span>
+      </div>
+<nav class="menu">
+  <a class="menu-item" href="dashboard.html" data-role="System Admin,Hospital Admin,Front Office,Lab Assistant">Dashboard</a>
+
+  <a class="menu-item" href="donors.html" data-role="System Admin,Hospital Admin,Front Office,Lab Assistant">Donors</a>
+  <a class="menu-item" href="patients.html" data-role="System Admin,Hospital Admin,Front Office,Lab Assistant">Patients</a>
+
+  <a class="menu-item" href="requests.html" data-role="System Admin,Hospital Admin,Front Office,Lab Assistant">Requests</a>
+
+  <a class="menu-item" href="inventory.html" data-role="System Admin,Hospital Admin,Lab Assistant">Inventory</a>
+
+  <a class="menu-item" href="donation.html" data-role="System Admin,Lab Assistant">Donation</a>
+
+  <a class="menu-item" href="verification.html" data-role="System Admin,Lab Assistant">Verification</a>
+
+  <a class="menu-item" href="disposal.html" data-role="System Admin,Lab Assistant">Disposal</a>
+
+  <a class="menu-item" href="reports.html" data-role="System Admin,Hospital Admin">Reports</a>
+
+  <a class="menu-item" href="create_user.html" data-role="System Admin">Create User</a>
+  <a class="menu-item" href="profile.html"
+   data-role="System Admin,Hospital Admin,Front Office,Lab Assistant">
+   Profile
+</a>
+</nav>
+
+      <button id="logoutBtn" class="btn btn-ghost logout">Logout</button>
+    </aside>
+
+    <!-- Main -->
+    <main class="main">
+      <header class="topbar">
+        <div>
+          <h2>Blood Disposal</h2>
+          <p class="muted">Dispose rejected or expired blood units</p>
+        </div>
+      </header>
+
+      <!-- Form -->
+      <section class="card">
+        <h3>Add Disposal Record</h3>
+
+        <form id="disForm" class="grid-form">
+          <div>
+            <label class="label">Unit ID</label>
+            <input id="unitId" class="input" type="text" placeholder="e.g., U0001" required />
+          </div>
+
+          <div>
+            <label class="label">Donor ID</label>
+            <input id="donorId" class="input" type="text" placeholder="e.g., D001" required />
+          </div>
+
+          <div>
+            <label class="label">Verification ID</label>
+            <input id="verificationId" class="input" type="text" placeholder="e.g., V0001" />
+          </div>
+
+          <div>
+            <label class="label">Disposed By</label>
+            <input id="disposedBy" class="input" type="text" placeholder="Lab Assistant / Admin" required />
+          </div>
+
+          <div>
+            <label class="label">Date</label>
+            <input id="date" class="input" type="date" required />
+          </div>
+
+          <div class="span-2">
+            <label class="label">Reason</label>
+            <input id="reason" class="input" type="text"
+              placeholder="Expired / Failed screening / Contamination" required />
+          </div>
+
+          <div class="actions">
+            <button class="btn btn-primary" type="submit">Save Disposal</button>
+            <button class="btn btn-ghost" type="reset">Clear</button>
+            <span id="msg" class="msg"></span>
+          </div>
+        </form>
+      </section>
+
+      <!-- Table -->
+      <section class="card table-card">
+        <div class="table-head">
+          <h3>Disposal History</h3>
+          <input id="search" class="input" type="text"
+            placeholder="Search by Unit ID / Donor ID"/>
+        </div>
+
+        <table id="disTable">
+          <thead>
+            <tr>
+              <th>Disposal ID</th>
+              <th>Unit ID</th>
+              <th>Donor ID</th>
+              <th>Verification ID</th>
+              <th>Date</th>
+              <th>Disposed By</th>
+              <th>Reason</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </section>
+
+    </main>
+  </div>
+  <script src="{% static 'js/rbac.js' %}"></script>
+  <script src="{% static 'js/api.js' %}"></script>
+  <script src="{% static 'js/disposal.js' %}"></script>
+</body>
+</html>

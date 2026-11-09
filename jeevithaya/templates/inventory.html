@@ -1,0 +1,174 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Jeevithaya | Inventory</title>
+  <link rel="stylesheet" href="{% static 'css/style.css' %}" />
+</head>
+<body>
+  <div class="layout">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="side-brand">
+        <div class="logo small">JV</div>
+        <span>Jeevithaya</span>
+      </div>
+
+<nav class="menu">
+  <a class="menu-item" href="dashboard.html" data-role="System Admin,Hospital Admin,Front Office,Lab Assistant">Dashboard</a>
+
+  <a class="menu-item" href="donors.html" data-role="System Admin,Hospital Admin,Front Office,Lab Assistant">Donors</a>
+  <a class="menu-item" href="patients.html" data-role="System Admin,Hospital Admin,Front Office,Lab Assistant">Patients</a>
+
+  <a class="menu-item" href="requests.html" data-role="System Admin,Hospital Admin,Front Office,Lab Assistant">Requests</a>
+
+  <a class="menu-item" href="inventory.html" data-role="System Admin,Hospital Admin,Lab Assistant">Inventory</a>
+
+  <a class="menu-item" href="donation.html" data-role="System Admin,Lab Assistant">Donation</a>
+
+  <a class="menu-item" href="verification.html" data-role="System Admin,Lab Assistant">Verification</a>
+
+  <a class="menu-item" href="disposal.html" data-role="System Admin,Lab Assistant">Disposal</a>
+
+  <a class="menu-item" href="reports.html" data-role="System Admin,Hospital Admin">Reports</a>
+
+  <a class="menu-item" href="create_user.html" data-role="System Admin">Create User</a>
+  <a class="menu-item" href="profile.html"
+   data-role="System Admin,Hospital Admin,Front Office,Lab Assistant">
+   Profile
+</a>
+</nav>
+
+
+      <button id="logoutBtn" class="btn btn-ghost logout">Logout</button>
+    </aside>
+
+    <!-- Main -->
+    <main class="main">
+      <header class="topbar">
+        <div>
+          <h2>Inventory Management</h2>
+          <p class="muted">Add blood/plasma units and track expiry</p>
+        </div>
+      </header>
+
+      <!-- Add Unit -->
+      <section class="card">
+        <h3>Add Inventory Unit</h3>
+
+        <form id="invForm" class="grid-form">
+          <div>
+            <label class="label">Donation ID</label>
+            <input id="donationId" class="input" type="text" placeholder="e.g., DN101" required />
+          </div>
+
+          <div>
+            <label class="label">Donor ID</label>
+            <input id="donorId" class="input" type="text" placeholder="e.g., D001" required />
+          </div>
+
+          <div>
+            <label class="label">Bloodbank ID</label>
+            <input id="bloodbankId" class="input" type="number" placeholder="e.g., 1" required />
+          </div>
+
+          <div>
+            <label class="label">Blood Group</label>
+            <select id="bloodGroup" class="input" required>
+              <option value="">Select</option>
+              <option>O+</option><option>O-</option>
+              <option>A+</option><option>A-</option>
+              <option>B+</option><option>B-</option>
+              <option>AB+</option><option>AB-</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="label">Blood / Plasma</label>
+            <select id="type" class="input" required>
+              <option value="">Select</option>
+              <option value="Blood">Blood</option>
+              <option value="Plasma">Plasma</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="label">Quantity</label>
+            <input id="qty" class="input" type="number" min="1" max="10" placeholder="e.g., 1" required />
+          </div>
+
+          <div>
+            <label class="label">Batch No</label>
+            <input id="batchNo" class="input" type="text" placeholder="e.g., BATCH-2025-01" required />
+          </div>
+
+          <div>
+            <label class="label">Expiry Date</label>
+            <input id="expiry" class="input" type="date" required />
+          </div>
+
+          <div>
+            <label class="label">Status</label>
+            <select id="status" class="input" required>
+              <option value="Available">Available</option>
+              <option value="Reserved">Reserved</option>
+              <option value="Issued">Issued</option>
+            </select>
+          </div>
+
+          <div class="actions">
+            <button class="btn btn-primary" type="submit">Save Unit</button>
+            <button class="btn btn-ghost" type="reset">Clear</button>
+            <span id="msg" class="msg"></span>
+          </div>
+        </form>
+      </section>
+
+      <!-- List -->
+      <section class="card table-card">
+        <div class="table-head">
+          <h3>Inventory Units</h3>
+
+          <div class="table-tools">
+            <select id="statusFilter" class="input">
+              <option value="">All Status</option>
+              <option>Available</option>
+              <option>Reserved</option>
+              <option>Issued</option>
+              <option>Expired</option>
+            </select>
+
+            <input id="search" class="input" type="text" placeholder="Search by Unit ID / Donor ID / Batch"/>
+          </div>
+        </div>
+
+        <table id="invTable">
+          <thead>
+            <tr>
+              <th>Unit ID</th>
+              <th>Donation</th>
+              <th>Donor</th>
+              <th>BloodBank</th>
+              <th>Blood</th>
+              <th>Type</th>
+              <th>Qty</th>
+              <th>Batch</th>
+              <th>Expiry</th>
+              <th>Status</th>
+              <th>Update</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </section>
+    </main>
+  </div>
+
+  <script src="{% static 'js/rbac.js' %}"></script>
+  <script src="{% static 'js/api.js' %}"></script>
+  <script src="{% static 'js/inventory.js' %}"></script>
+</body>
+</html>

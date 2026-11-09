@@ -1,0 +1,82 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Jeevithaya | Profile</title>
+  <link rel="stylesheet" href="{% static 'css/style.css' %}" />
+</head>
+<body>
+
+<div class="layout">
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="side-brand">
+      <div class="logo small">JV</div>
+      <span>Jeevithaya</span>
+    </div>
+
+    <nav class="menu">
+      <a class="menu-item" href="dashboard.html"
+         data-role="System Admin,Hospital Admin,Front Office,Lab Assistant">Dashboard</a>
+
+      <a class="menu-item active" href="profile.html"
+         data-role="System Admin,Hospital Admin,Front Office,Lab Assistant">Profile</a>
+
+      <a class="menu-item" href="reports.html"
+         data-role="System Admin,Hospital Admin">Reports</a>
+
+      <a class="menu-item" href="create_user.html"
+         data-role="System Admin">Create User</a>
+    </nav>
+
+    <button id="logoutBtn" class="btn btn-ghost logout">Logout</button>
+  </aside>
+
+  <!-- Main -->
+  <main class="main">
+    <header class="topbar">
+      <h2>My Profile</h2>
+      <p class="muted">View and manage your account</p>
+    </header>
+
+    <section class="card">
+      <form id="profileForm" class="grid-form">
+
+        <div>
+          <label class="label">Name</label>
+          <input id="name" class="input" required>
+        </div>
+
+        <div>
+          <label class="label">Email</label>
+          <input id="email" class="input" disabled>
+        </div>
+
+        <div>
+          <label class="label">Role</label>
+          <input id="role" class="input" disabled>
+        </div>
+
+        <div>
+          <label class="label">New Password</label>
+          <input id="password" type="password" class="input"
+                 placeholder="Leave blank to keep current">
+        </div>
+
+        <div class="actions">
+          <button class="btn btn-primary">Update Profile</button>
+          <span id="msg" class="msg"></span>
+        </div>
+
+      </form>
+    </section>
+
+  </main>
+</div>
+
+<script src="{% static 'js/rbac.js' %}"></script>
+<script src="{% static 'js/api.js' %}"></script>
+<script src="{% static 'js/profile.js' %}"></script>
+</body>
+</html>

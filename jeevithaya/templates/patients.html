@@ -1,0 +1,170 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Jeevithaya | Patients</title>
+  <link rel="stylesheet" href="{% static 'css/style.css' %}" />
+</head>
+<body>
+  <div class="layout">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="side-brand">
+        <div class="logo small">JV</div>
+        <span>Jeevithaya</span>
+      </div>
+
+<nav class="menu">
+  <a class="menu-item" href="dashboard.html" data-role="System Admin,Hospital Admin,Front Office,Lab Assistant">Dashboard</a>
+
+  <a class="menu-item" href="donors.html" data-role="System Admin,Hospital Admin,Front Office,Lab Assistant">Donors</a>
+  <a class="menu-item" href="patients.html" data-role="System Admin,Hospital Admin,Front Office,Lab Assistant">Patients</a>
+
+  <a class="menu-item" href="requests.html" data-role="System Admin,Hospital Admin,Front Office,Lab Assistant">Requests</a>
+
+  <a class="menu-item" href="inventory.html" data-role="System Admin,Hospital Admin,Lab Assistant">Inventory</a>
+
+  <a class="menu-item" href="donation.html" data-role="System Admin,Lab Assistant">Donation</a>
+
+  <a class="menu-item" href="verification.html" data-role="System Admin,Lab Assistant">Verification</a>
+
+  <a class="menu-item" href="disposal.html" data-role="System Admin,Lab Assistant">Disposal</a>
+
+  <a class="menu-item" href="reports.html" data-role="System Admin,Hospital Admin">Reports</a>
+
+  <a class="menu-item" href="create_user.html" data-role="System Admin">Create User</a>
+  <a class="menu-item" href="profile.html"
+   data-role="System Admin,Hospital Admin,Front Office,Lab Assistant">
+   Profile
+</a>
+</nav>
+
+
+      <button id="logoutBtn" class="btn btn-ghost logout">Logout</button>
+    </aside>
+
+    <!-- Main -->
+    <main class="main">
+      <header class="topbar">
+        <div>
+          <h2>Patient Registration</h2>
+          <p class="muted">Add patient details & manage patient list</p>
+        </div>
+      </header>
+
+      <!-- Form -->
+      <section class="card">
+        <h3>Add Patient</h3>
+
+        <form id="patientForm" class="grid-form">
+          <div>
+            <label class="label">Hospital ID</label>
+            <input class="input" id="hospitalId" type="number" placeholder="e.g., 1" required />
+          </div>
+
+          <div>
+            <label class="label">Patient Name</label>
+            <input class="input" id="name" type="text" placeholder="Full name" required />
+          </div>
+
+          <div>
+            <label class="label">DOB</label>
+            <input class="input" id="dob" type="date" />
+          </div>
+
+          <div>
+            <label class="label">Age</label>
+            <input class="input" id="age" type="number" min="0" max="120" placeholder="e.g., 35" />
+          </div>
+
+          <div>
+            <label class="label">Gender</label>
+            <select class="input" id="gender" required>
+              <option value="">Select</option>
+              <option>Male</option>
+              <option>Female</option>
+              <option>Other</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="label">Contact No</label>
+            <input class="input" id="contact" type="text" placeholder="10-digit number" required />
+          </div>
+
+          <div class="span-2">
+            <label class="label">Address</label>
+            <input class="input" id="address" type="text" placeholder="Address" />
+          </div>
+
+          <div>
+            <label class="label">Blood Group</label>
+            <select class="input" id="bloodGroup" required>
+              <option value="">Select</option>
+              <option>O+</option><option>O-</option>
+              <option>A+</option><option>A-</option>
+              <option>B+</option><option>B-</option>
+              <option>AB+</option><option>AB-</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="label">Blood / Plasma</label>
+            <select class="input" id="type" required>
+              <option value="">Select</option>
+              <option value="Blood">Blood</option>
+              <option value="Plasma">Plasma</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="label">Urgency Level</label>
+            <select class="input" id="urgency" required>
+              <option value="">Select</option>
+              <option value="Normal">Normal</option>
+              <option value="Urgent">Urgent</option>
+              <option value="Critical">Critical</option>
+            </select>
+          </div>
+
+          <div class="actions">
+            <button class="btn btn-primary" type="submit">Save Patient</button>
+            <button class="btn btn-ghost" type="reset">Clear</button>
+            <span id="msg" class="msg"></span>
+          </div>
+        </form>
+      </section>
+
+      <!-- List -->
+      <section class="card table-card">
+        <div class="table-head">
+          <h3>Patient List</h3>
+          <input id="search" class="input" type="text" placeholder="Search by name / phone"/>
+        </div>
+
+        <table id="patientTable">
+          <thead>
+            <tr>
+              <th>Patient ID</th>
+              <th>Name</th>
+              <th>Hospital</th>
+              <th>Blood</th>
+              <th>Type</th>
+              <th>Urgency</th>
+              <th>Contact</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </section>
+    </main>
+  </div>
+
+  <script src="{% static 'js/rbac.js' %}"></script>
+  <script src="{% static 'js/api.js' %}"></script>
+  <script src="{% static 'js/patients.js' %}"></script>
+</body>
+</html>

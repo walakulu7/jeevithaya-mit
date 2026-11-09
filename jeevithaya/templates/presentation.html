@@ -1,0 +1,628 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Jeevithaya | MIT Presentation Slides</title>
+  <link rel="stylesheet" href="{% static 'css/style.css' %}" />
+  <style>
+    :root {
+      --slide-bg: #0f172a;
+      --slide-card: #1e293b;
+      --slide-text: #f8fafc;
+      --slide-accent: #dc2626;
+      --slide-accent-light: #ef4444;
+      --slide-muted: #94a3b8;
+    }
+    body.presentation-mode {
+      margin: 0;
+      padding: 0;
+      background: var(--slide-bg);
+      color: var(--slide-text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow-x: hidden;
+    }
+    .deck-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 16px 32px;
+      background: rgba(15, 23, 42, 0.95);
+      border-bottom: 1px solid #334155;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+    .deck-brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 1.25rem;
+      font-weight: 700;
+    }
+    .deck-brand .logo {
+      background: var(--slide-accent);
+      color: white;
+      padding: 6px 12px;
+      border-radius: 8px;
+    }
+    .deck-controls {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .slide-viewport {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 20px;
+    }
+    .slide-card {
+      background: var(--slide-card);
+      border: 1px solid #334155;
+      border-radius: 16px;
+      width: 100%;
+      max-width: 1100px;
+      min-height: 600px;
+      padding: 48px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+      display: none;
+      flex-direction: column;
+      animation: fadeIn 0.25s ease-in-out;
+    }
+    .slide-card.active {
+      display: flex;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .slide-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+    }
+    .member-badge {
+      background: #3b82f6;
+      color: white;
+      padding: 4px 14px;
+      border-radius: 9999px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .slide-counter {
+      color: var(--slide-muted);
+      font-size: 0.9rem;
+      font-weight: 500;
+    }
+    .slide-title {
+      font-size: 2.2rem;
+      font-weight: 800;
+      color: white;
+      margin: 0 0 12px 0;
+      line-height: 1.2;
+    }
+    .slide-subtitle {
+      font-size: 1.15rem;
+      color: var(--slide-muted);
+      margin: 0 0 32px 0;
+    }
+    .slide-content {
+      flex: 1;
+      font-size: 1.2rem;
+      line-height: 1.7;
+    }
+    .slide-content ul {
+      margin: 0;
+      padding-left: 28px;
+    }
+    .slide-content li {
+      margin-bottom: 16px;
+    }
+    .grid-2col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+    }
+    .info-card {
+      background: #0f172a;
+      border: 1px solid #334155;
+      border-radius: 12px;
+      padding: 24px;
+    }
+    .info-card h4 {
+      margin: 0 0 10px 0;
+      color: var(--slide-accent-light);
+      font-size: 1.2rem;
+    }
+    .speaker-notes-drawer {
+      background: #182234;
+      border-top: 2px solid var(--slide-accent);
+      padding: 20px 32px;
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      z-index: 40;
+      box-shadow: 0 -10px 25px rgba(0,0,0,0.5);
+      display: none;
+    }
+    .speaker-notes-drawer.open {
+      display: block;
+    }
+    .speaker-notes-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+      font-weight: 700;
+      color: var(--slide-accent-light);
+    }
+    .speaker-notes-body {
+      font-size: 1.05rem;
+      color: #cbd5e1;
+      line-height: 1.6;
+      max-height: 160px;
+      overflow-y: auto;
+    }
+    .btn-slide {
+      background: #334155;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .btn-slide:hover {
+      background: #475569;
+    }
+    .btn-slide.primary {
+      background: var(--slide-accent);
+    }
+    .btn-slide.primary:hover {
+      background: var(--slide-accent-light);
+    }
+    .keyboard-hint {
+      color: var(--slide-muted);
+      font-size: 0.8rem;
+    }
+  </style>
+</head>
+<body class="presentation-mode">
+
+  <!-- Presentation Header -->
+  <header class="deck-header">
+    <div class="deck-brand">
+      <div class="logo">JV</div>
+      <span>Jeevithaya | MIT Batch 2025/2026 - Group 5</span>
+    </div>
+
+    <div class="deck-controls">
+      <span class="keyboard-hint">Keys: ← Previous | → Next | [S] Notes</span>
+      <button id="prevBtn" class="btn-slide">◀ Prev</button>
+      <button id="nextBtn" class="btn-slide primary">Next ▶</button>
+      <button id="notesToggle" class="btn-slide">🎙️ Speaker Notes</button>
+      <a href="dashboard.html" class="btn-slide" style="text-decoration:none;">Dashboard ↗</a>
+    </div>
+  </header>
+
+  <!-- Slide Viewport -->
+  <main class="slide-viewport">
+
+    <!-- SLIDE 1 -->
+    <div class="slide-card active" data-slide="1" data-member="Member 1" data-notes="Good morning respected examiners and colleagues. On behalf of Group 5 of the MIT batch, I am proud to present our project: Jeevithaya—a centralized blood and plasma management system. In emergency medicine, minutes matter. Our mission with Jeevithaya is to connect donors, blood banks, laboratories, and hospital wards on a unified, high-reliability platform that prevents wastage and saves lives.">
+      <div class="slide-meta">
+        <span class="member-badge">Member 1: Project Overview</span>
+        <span class="slide-counter">Slide 1 of 15</span>
+      </div>
+      <h1 class="slide-title">Jeevithaya (ජීවිතය)</h1>
+      <p class="slide-subtitle">Centralized Blood & Plasma Management System</p>
+      <div class="slide-content">
+        <div class="grid-2col">
+          <div class="info-card">
+            <h4>Academic Evaluation</h4>
+            <p><strong>Program:</strong> Master of Information Technology (MIT)</p>
+            <p><strong>Academic Year:</strong> 2025 / 2026 Batch</p>
+            <p><strong>Project Team:</strong> Group 5</p>
+          </div>
+          <div class="info-card">
+            <h4>System Purpose</h4>
+            <p>An enterprise healthcare platform engineering zero-waste cold chain monitoring, mandatory serological safety gates, and rapid surgical transfusion fulfillment.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 2 -->
+    <div class="slide-card" data-slide="2" data-member="Member 1" data-notes="Blood is a perishable, highly sensitive therapeutic resource. Traditional manual or fragmented blood bank records suffer from three fatal flaws: high wastage rates due to missed expiry dates, communication delays between emergency rooms and blood banks, and the ever-present danger of contaminated blood entering circulation. Jeevithaya was engineered specifically to solve these critical bottlenecks through software automation and strict digital checkpoints.">
+      <div class="slide-meta">
+        <span class="member-badge">Member 1: Problem Statement</span>
+        <span class="slide-counter">Slide 2 of 15</span>
+      </div>
+      <h2 class="slide-title">Problem Statement & Motivation</h2>
+      <p class="slide-subtitle">Why traditional blood banking fails emergency medicine</p>
+      <div class="slide-content">
+        <ul>
+          <li><strong>Siloed & Paper-Based Registers:</strong> Inability to locate rare blood types (e.g. O-, AB-) across regional healthcare networks during emergency surgery.</li>
+          <li><strong>Cold-Chain Expiration Wastage:</strong> Units expire unnoticed in cold storage due to lack of automated shelf-life tracking.</li>
+          <li><strong>Transfusion Safety Hazards:</strong> Clerical errors during screening can lead to catastrophic transfusion-transmitted infections (TTIs).</li>
+          <li><strong>Communication Latency:</strong> Surgical wards experience dangerous delays awaiting phone confirmations for cross-matched blood availability.</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- SLIDE 3 -->
+    <div class="slide-card" data-slide="3" data-member="Member 1" data-notes="Our scope covers the full blood supply chain: donor recruitment and registration, intake phlebotomy sessions, laboratory serological testing, cold-storage inventory tracking, surgical ward requisition fulfillment, bio-hazardous waste disposal, and executive auditing. I will now hand over to Member 2 to walk you through our system architecture and database design.">
+      <div class="slide-meta">
+        <span class="member-badge">Member 1: Scope & Objectives</span>
+        <span class="slide-counter">Slide 3 of 15</span>
+      </div>
+      <h2 class="slide-title">Project Objectives & Clinical Scope</h2>
+      <p class="slide-subtitle">Target deliverables of the Jeevithaya platform</p>
+      <div class="slide-content">
+        <div class="grid-2col">
+          <div class="info-card">
+            <h4>Primary Objectives</h4>
+            <ul>
+              <li>Centralize donor records and eligibility checks.</li>
+              <li>Automate cold-chain expiration scanning.</li>
+              <li>Enforce mandatory laboratory screening before stock release.</li>
+              <li>Streamline hospital requisitions with priority triage.</li>
+            </ul>
+          </div>
+          <div class="info-card">
+            <h4>Full Life-Cycle Scope</h4>
+            <p><strong>Intake:</strong> Voluntary Donor Registration & Phlebotomy</p>
+            <p><strong>Safety:</strong> HIV, Hep B, Hep C, Syphilis Screening</p>
+            <p><strong>Inventory:</strong> Real-time cold-chain batch tracking</p>
+            <p><strong>Fulfillment:</strong> Emergency cross-match allocation</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 4 -->
+    <div class="slide-card" data-slide="4" data-member="Member 2" data-notes="Thank you, Member 1. To ensure high availability and responsiveness in critical healthcare environments, we implemented a decoupled tiered architecture. Our presentation layer communicates asynchronously with the Django backend via RESTful JSON endpoints. We selected Django for its proven robustness, built-in ORM security, session management, and scalability. On the database level, we run MySQL for production with an automated fallback to SQLite for local staging and isolated unit testing.">
+      <div class="slide-meta">
+        <span class="member-badge">Member 2: Architecture</span>
+        <span class="slide-counter">Slide 4 of 15</span>
+      </div>
+      <h2 class="slide-title">Tiered System Architecture</h2>
+      <p class="slide-subtitle">Modular, scalable full-stack healthcare platform</p>
+      <div class="slide-content">
+        <div class="grid-2col">
+          <div class="info-card">
+            <h4>Presentation Tier (Client)</h4>
+            <p>• Clean HTML5 templates with CSS Grid/Flexbox styling.</p>
+            <p>• Asynchronous REST API client (`api.js`) for seamless DOM updates.</p>
+            <p>• Client-side offline fallback for disaster resilience.</p>
+          </div>
+          <div class="info-card">
+            <h4>Application & Data Tier</h4>
+            <p>• <strong>Backend:</strong> Python 3.12+ with Django Framework.</p>
+            <p>• <strong>ORM:</strong> Parameterized SQL security & migration engine.</p>
+            <p>• <strong>Database:</strong> Production MySQL 8.x + Zero-config SQLite development mode.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 5 -->
+    <div class="slide-card" data-slide="5" data-member="Member 2" data-notes="Our database schema is normalized to 3NF to avoid redundancy. Crucially, we designed the schema to reflect real-world clinical relationships: a Donor gives a Donation, which yields an Inventory Unit. That Unit cannot enter the Available pool without a successful Verification record. If it fails or expires, it transitions into the Disposal log. This maintains end-to-end relational integrity.">
+      <div class="slide-meta">
+        <span class="member-badge">Member 2: Data Modeling</span>
+        <span class="slide-counter">Slide 5 of 15</span>
+      </div>
+      <h2 class="slide-title">Database Design & Entity Relationships</h2>
+      <p class="slide-subtitle">Normalized relational schema (3NF)</p>
+      <div class="slide-content">
+        <ul>
+          <li><strong>User:</strong> Institutional accounts with role-based access delegation.</li>
+          <li><strong>Donor & Patient:</strong> Medical demographics, blood group records, and contact numbers.</li>
+          <li><strong>Donation:</strong> Phlebotomy sessions linking donors to collection blood banks.</li>
+          <li><strong>Inventory:</strong> Cold-chain blood units with batch numbers, expiry dates, and statuses.</li>
+          <li><strong>Verification:</strong> Quality control lab tests (HIV, Hepatitis B/C, Syphilis).</li>
+          <li><strong>BloodRequest:</strong> Patient transfusion requisitions categorized by urgency.</li>
+          <li><strong>Disposal:</strong> Statutory hazardous waste destruction logs.</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- SLIDE 6 -->
+    <div class="slide-card" data-slide="6" data-member="Member 2" data-notes="A key highlight of our integration is resilience. In healthcare, a dropped network packet cannot crash a nurse's terminal. We developed an intelligent payload normalizer on the Django backend that accepts multi-format inputs, paired with an offline storage fallback on the client side. Now, Member 3 will explain how we modeled this system using core Object-Oriented Programming concepts.">
+      <div class="slide-meta">
+        <span class="member-badge">Member 2: Integration & APIs</span>
+        <span class="slide-counter">Slide 6 of 15</span>
+      </div>
+      <h2 class="slide-title">REST API Layer & Payload Normalization</h2>
+      <p class="slide-subtitle">Robust communication bridge between frontend and ORM</p>
+      <div class="slide-content">
+        <div class="grid-2col">
+          <div class="info-card">
+            <h4>Standardized REST Endpoints</h4>
+            <p>• `/api/donors/` • `/api/inventory/`</p>
+            <p>• `/api/requests/` • `/api/verifications/`</p>
+            <p>• `/api/auth/login/` • `/api/dashboard/stats/`</p>
+          </div>
+          <div class="info-card">
+            <h4>Payload Normalization</h4>
+            <p>Bridges the impedance mismatch between client JavaScript (camelCase: `patientId`) and Django models (PascalCase: `PatientID`), eliminating 400 Bad Request keyword exceptions.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 7 -->
+    <div class="slide-card" data-slide="7" data-member="Member 3" data-notes="Thank you, Member 2. As an MIT assignment, one of our primary design goals was demonstrating software engineering rigor through Object-Oriented Programming. We implemented abstract models to avoid repetition. BasePerson abstracts all common attributes of human actors in the system. Donor and Patient inherit from BasePerson, gaining shared methods like dynamic age calculation while adding their own specialized properties.">
+      <div class="slide-meta">
+        <span class="member-badge">Member 3: OOP Principles</span>
+        <span class="slide-counter">Slide 7 of 15</span>
+      </div>
+      <h2 class="slide-title">OOP: Abstraction & Inheritance</h2>
+      <p class="slide-subtitle">Eliminating redundancy with abstract domain hierarchies</p>
+      <div class="slide-content">
+        <div class="grid-2col">
+          <div class="info-card">
+            <h4>1. Abstraction</h4>
+            <p>• `BaseAuditableEntity`: Abstract model encapsulating `CreatedAt` and `UpdatedAt` timestamps.</p>
+            <p>• `BaseService`: Abstract base class enforcing standardized data retrieval methods across domain services.</p>
+          </div>
+          <div class="info-card">
+            <h4>2. Inheritance</h4>
+            <p>• `BasePerson`: Abstract model containing demographic attributes (`Name`, `BloodGroup`, `Gender`, `Address`, `calculate_age`).</p>
+            <p>• `Donor` and `Patient` inherit directly from `BasePerson`, enforcing schema consistency.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 8 -->
+    <div class="slide-card" data-slide="8" data-member="Member 3" data-notes="Instead of writing 'anemic domain models' where logic is scattered across raw views, we followed strict Encapsulation. An Inventory object knows how to check its own expiry date. A Verification object knows whether its serological markers are safe. A BloodRequest encapsulates its own state transitions. This prevents invalid states and makes our codebase maintainable and testable.">
+      <div class="slide-meta">
+        <span class="member-badge">Member 3: OOP Principles</span>
+        <span class="slide-counter">Slide 8 of 15</span>
+      </div>
+      <h2 class="slide-title">OOP: Encapsulation & Rich Domain Models</h2>
+      <p class="slide-subtitle">Bundling data and validation behavior within entities</p>
+      <div class="slide-content">
+        <ul>
+          <li><strong>Password Security Encapsulation:</strong> `User.set_password()` and `User.check_password()` encapsulate PBKDF2-SHA256 hashing internally.</li>
+          <li><strong>Cold-Chain Expiration Logic:</strong> `Inventory.is_expired()` and `days_until_expiry()` encapsulate shelf-life calculations.</li>
+          <li><strong>Serological Safety Gate:</strong> `Verification.is_safe()` encapsulates multi-marker test validation.</li>
+          <li><strong>Requisition State Machine:</strong> `BloodRequest.approve()`, `.fulfill()`, and `.reject()` protect lifecycle state transitions.</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- SLIDE 9 -->
+    <div class="slide-card" data-slide="9" data-member="Member 3" data-notes="To demonstrate Polymorphism, we implemented the Strategy Design Pattern for our reporting module. AnalyticsContext can execute an InventoryReportStrategy, a DonationReportStrategy, or a RequestReportStrategy through a single unified generate() method. This makes adding new reports in the future as simple as adding a new class without modifying existing reporting pipelines. I will now hand over to Member 4 for the live workflow walkthrough.">
+      <div class="slide-meta">
+        <span class="member-badge">Member 3: OOP Principles</span>
+        <span class="slide-counter">Slide 9 of 15</span>
+      </div>
+      <h2 class="slide-title">OOP: Polymorphism & Strategy Pattern</h2>
+      <p class="slide-subtitle">Extensible reporting architecture in `services.py`</p>
+      <div class="slide-content">
+        <div class="info-card" style="margin-bottom: 20px;">
+          <h4>Strategy Design Pattern for Reporting</h4>
+          <p>• <strong>Interface:</strong> `BaseReportStrategy` declares abstract method `generate(days)`.</p>
+          <p>• <strong>Concrete Strategies:</strong></p>
+          <p>&nbsp;&nbsp;&nbsp;&nbsp;1. `InventoryReportStrategy`: Calculates blood group distributions and spoilage.</p>
+          <p>&nbsp;&nbsp;&nbsp;&nbsp;2. `DonationReportStrategy`: Analyzes donor intake trends.</p>
+          <p>&nbsp;&nbsp;&nbsp;&nbsp;3. `RequestReportStrategy`: Analyzes hospital demand and critical emergency ratios.</p>
+          <p>• <strong>Context Executor:</strong> `AnalyticsContext` executes any strategy polymorphically at runtime.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 10 -->
+    <div class="slide-card" data-slide="10" data-member="Member 4" data-notes="Thank you, Member 3. Let us now examine how these concepts translate into real hospital workflows. Everything starts with the donor. Once blood is collected, our system enforces a mandatory quality gate. Notice on the slide: until the laboratory records a 'Passed' verification across all four infectious disease markers, the unit is physically and digitally locked. It cannot be seen or reserved by hospital staff. If a sample fails, our service layer automatically logs a disposal order.">
+      <div class="slide-meta">
+        <span class="member-badge">Member 4: Core Workflows</span>
+        <span class="slide-counter">Slide 10 of 15</span>
+      </div>
+      <h2 class="slide-title">Intake & Laboratory Screening Pipeline</h2>
+      <p class="slide-subtitle">Mandatory quality control firewall</p>
+      <div class="slide-content">
+        <ol>
+          <li><strong>Donor Registration:</strong> Front-office registers voluntary donor and confirms eligibility.</li>
+          <li><strong>Phlebotomy Intake:</strong> Collected blood units recorded with volume and component type.</li>
+          <li><strong>Serological Safety Screening:</strong> Lab assistant conducts mandatory tests:
+            <br/><em>HIV • Hepatitis B • Hepatitis C • Syphilis (VDRL)</em>
+          </li>
+          <li><strong>Automated Service Trigger:</strong>
+            <br/>• <strong>PASSED:</strong> Unit unlocked $\rightarrow$ Status set to `Available` in Inventory.
+            <br/>• <strong>FAILED:</strong> Unit quarantined $\rightarrow$ Bio-waste `Disposal` record auto-created.
+          </li>
+        </ol>
+      </div>
+    </div>
+
+    <!-- SLIDE 11 -->
+    <div class="slide-card" data-slide="11" data-member="Member 4" data-notes="When a surgery ward requests blood, the requisition carries an urgency badge. Critical requests appear at the top of the dashboard. Our RequestFulfillmentService performs an automated compatibility check. If sufficient stock exists, the system reserves and issues the specific matching batch units, preventing double-allocation and ensuring complete stock traceability.">
+      <div class="slide-meta">
+        <span class="member-badge">Member 4: Core Workflows</span>
+        <span class="slide-counter">Slide 11 of 15</span>
+      </div>
+      <h2 class="slide-title">Requisition & Smart Stock Deduction</h2>
+      <p class="slide-subtitle">Rapid emergency ward fulfillment</p>
+      <div class="slide-content">
+        <ul>
+          <li><strong>Triage Categorization:</strong> Requisitions flagged as `Normal`, `Urgent`, or `Critical`.</li>
+          <li><strong>Administrative Review:</strong> Hospital administrator authorizes clinical request.</li>
+          <li><strong>Automated Compatibility Allocation:</strong> `RequestFulfillmentService` locates verified, non-expired units of matching blood group.</li>
+          <li><strong>Stock Deduction:</strong> Units transition from `Available` $\rightarrow$ `Issued`, automatically updating live counts.</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- SLIDE 12 -->
+    <div class="slide-card" data-slide="12" data-member="Member 4" data-notes="The Reports module gives blood bank directors immediate visibility. At a glance, they can see current reserves broken down by blood type, track expiring units before they spoil, and monitor request fulfillment rates. The audit feed records every action, ensuring medical accountability. Member 5 will now discuss our security implementation, testing, and conclusion.">
+      <div class="slide-meta">
+        <span class="member-badge">Member 4: Analytics</span>
+        <span class="slide-counter">Slide 12 of 15</span>
+      </div>
+      <h2 class="slide-title">Real-Time Operational Analytics</h2>
+      <p class="slide-subtitle">Management intelligence & regulatory auditability</p>
+      <div class="slide-content">
+        <div class="grid-2col">
+          <div class="info-card">
+            <h4>Live KPI Metrics</h4>
+            <p>• Breakdown across all 8 blood groups.</p>
+            <p>• Cold-chain spoilage alert counters.</p>
+            <p>• Flexible time horizons (7, 30, 90 days, All-time).</p>
+          </div>
+          <div class="info-card">
+            <h4>Audit Feeds & Exports</h4>
+            <p>• Reverse-chronological activity log tracking all operations.</p>
+            <p>• One-click CSV Export for statutory health ministry reporting.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 13 -->
+    <div class="slide-card" data-slide="13" data-member="Member 5" data-notes="Thank you, Member 4. In healthcare informatics, confidentiality and role boundaries are paramount. A front-office clerk must not be able to alter laboratory test results, and a lab technician should not have administrative user-creation privileges. We implemented a dual-layer RBAC system: dynamic client-side menu trimming for usability, backed by server-side role enforcement. Passwords are encrypted with industry-standard PBKDF2-SHA256, and all database interactions use Django's parameterized ORM, protecting against SQL injection.">
+      <div class="slide-meta">
+        <span class="member-badge">Member 5: Security</span>
+        <span class="slide-counter">Slide 13 of 15</span>
+      </div>
+      <h2 class="slide-title">Security Architecture & RBAC</h2>
+      <p class="slide-subtitle">Multi-layered clinical data governance</p>
+      <div class="slide-content">
+        <ul>
+          <li><strong>Role-Based Access Control (RBAC):</strong> Strict separation of duties across 4 profiles (`System Admin`, `Hospital Admin`, `Front Office`, `Lab Assistant`).</li>
+          <li><strong>Cryptographic Password Hashing:</strong> PBKDF2 with SHA-256 and cryptographic salts—zero plaintext storage.</li>
+          <li><strong>Session Security:</strong> Server-backed Django session management with secure session invalidation on logout.</li>
+          <li><strong>Injection Immunity:</strong> Fully parameterized Django ORM queries preventing SQL injection attacks.</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- SLIDE 14 -->
+    <div class="slide-card" data-slide="14" data-member="Member 5" data-notes="During our development cycle, our biggest engineering hurdle was bridging the client-side single-page interactivity with the server-side Django ORM without introducing tight coupling. By standardizing our API contracts, building an intelligent normalizer for payload casing, and supporting seamless fallback between MySQL and SQLite, we achieved a resilient, maintainable system ready for hospital staging. All automated tests pass with 100% success.">
+      <div class="slide-meta">
+        <span class="member-badge">Member 5: Verification & Testing</span>
+        <span class="slide-counter">Slide 14 of 15</span>
+      </div>
+      <h2 class="slide-title">Verification, Testing & Challenges Overcome</h2>
+      <p class="slide-subtitle">Engineering rigor and automated test coverage</p>
+      <div class="slide-content">
+        <div class="grid-2col">
+          <div class="info-card">
+            <h4>Engineering Challenges Solved</h4>
+            <p>✓ Asynchronous REST client integration.</p>
+            <p>✓ Payload casing normalization (camelCase to PascalCase).</p>
+            <p>✓ Dual-engine database support (MySQL + SQLite fallback).</p>
+          </div>
+          <div class="info-card">
+            <h4>Automated Test Suite</h4>
+            <p>• Automated test suite in `tests.py` passing with 100% success.</p>
+            <p>• Validates OOP inheritance, age calculation, password hashing, and Strategy pattern reporting.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 15 -->
+    <div class="slide-card" data-slide="15" data-member="Member 5" data-notes="To conclude, Jeevithaya represents our team's commitment to solving real-world healthcare challenges using solid software engineering and Object-Oriented principles. We have met all academic criteria, implemented end-to-end workflows, and built a system ready for real-world extension. On behalf of Group 5, thank you for your time, and we now welcome any questions from the panel.">
+      <div class="slide-meta">
+        <span class="member-badge">Member 5: Conclusion</span>
+        <span class="slide-counter">Slide 15 of 15</span>
+      </div>
+      <h2 class="slide-title">Conclusion & Future Roadmap</h2>
+      <p class="slide-subtitle">Summary of academic outcomes and project impact</p>
+      <div class="slide-content">
+        <div class="info-card" style="margin-bottom: 20px;">
+          <h4>Academic & Clinical Achievements</h4>
+          <p>✓ Delivered a fully operational, centralized Blood & Plasma Management System.</p>
+          <p>✓ Demonstrated all 4 OOP core principles (Abstraction, Inheritance, Encapsulation, Polymorphism).</p>
+          <p>✓ Complete operational documentation: User Manual, Presentation Deck, Study Guide, and UML Architecture.</p>
+        </div>
+        <p><strong>Future Scope:</strong> Automated SMS donor recall gateways, IoT temperature sensor logging for cold-chain refrigeration units, and native mobile apps.</p>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Speaker Notes Drawer -->
+  <div id="speakerNotes" class="speaker-notes-drawer">
+    <div class="speaker-notes-header">
+      <span id="speakerNotesLabel">🎙️ Speaker Notes: Member 1</span>
+      <button id="closeNotesBtn" class="btn-slide" style="padding:2px 8px;">✕ Close</button>
+    </div>
+    <div id="speakerNotesText" class="speaker-notes-body">
+      <!-- Script loaded dynamically -->
+    </div>
+  </div>
+
+  <script>
+    const slides = document.querySelectorAll(".slide-card");
+    const prevBtn = document.getElementById("prevBtn");
+    const nextBtn = document.getElementById("nextBtn");
+    const notesToggle = document.getElementById("notesToggle");
+    const closeNotesBtn = document.getElementById("closeNotesBtn");
+    const speakerNotes = document.getElementById("speakerNotes");
+    const speakerNotesLabel = document.getElementById("speakerNotesLabel");
+    const speakerNotesText = document.getElementById("speakerNotesText");
+
+    let currentIdx = 0;
+
+    function showSlide(idx) {
+      if (idx < 0) idx = 0;
+      if (idx >= slides.length) idx = slides.length - 1;
+
+      slides.forEach((s, i) => {
+        s.classList.toggle("active", i === idx);
+      });
+
+      currentIdx = idx;
+      prevBtn.disabled = (idx === 0);
+      nextBtn.disabled = (idx === slides.length - 1);
+
+      // Update speaker notes
+      const activeSlide = slides[idx];
+      const member = activeSlide.getAttribute("data-member") || "Speaker";
+      const notes = activeSlide.getAttribute("data-notes") || "No notes available.";
+
+      speakerNotesLabel.textContent = `🎙️ Speaker Notes (${member})`;
+      speakerNotesText.textContent = notes;
+    }
+
+    prevBtn.addEventListener("click", () => showSlide(currentIdx - 1));
+    nextBtn.addEventListener("click", () => showSlide(currentIdx + 1));
+
+    notesToggle.addEventListener("click", () => {
+      speakerNotes.classList.toggle("open");
+    });
+    closeNotesBtn.addEventListener("click", () => {
+      speakerNotes.classList.remove("open");
+    });
+
+    // Keyboard Shortcuts
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "ArrowRight" || e.key === " " || e.key === "PageDown") {
+        showSlide(currentIdx + 1);
+      } else if (e.key === "ArrowLeft" || e.key === "Backspace" || e.key === "PageUp") {
+        showSlide(currentIdx - 1);
+      } else if (e.key.toLowerCase() === "s") {
+        speakerNotes.classList.toggle("open");
+      }
+    });
+
+    // Initialize first slide notes
+    showSlide(0);
+  </script>
+</body>
+</html>

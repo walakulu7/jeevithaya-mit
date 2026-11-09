@@ -1,0 +1,38 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Jeevithaya | Logging Out</title>
+  <link rel="stylesheet" href="{% static 'css/style.css' %}" />
+</head>
+<body>
+  <div class="page">
+    <div class="card auth-card" style="text-align: center; padding: 40px;">
+      <h2>Logging out...</h2>
+      <p class="muted">Clearing session and redirecting to login page.</p>
+    </div>
+  </div>
+
+  <script src="{% static 'js/api.js' %}"></script>
+  <script>
+    // Clear client-side session tokens
+    try {
+      localStorage.removeItem("jv_session");
+      sessionStorage.removeItem("jv_session");
+    } catch {}
+
+    // Notify backend session logout
+    if (window.authAPI && typeof window.authAPI.logout === "function") {
+      window.authAPI.logout().catch(() => {});
+    }
+
+    // Redirect to login
+    setTimeout(() => {
+      window.location.href = "login.html";
+    }, 600);
+  </script>
+</body>
+</html>
+
