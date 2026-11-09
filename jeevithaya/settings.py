@@ -77,7 +77,7 @@ WSGI_APPLICATION = 'jeevithaya.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 
-DB_ENGINE = os.environ.get('DB_ENGINE', 'sqlite').lower()
+DB_ENGINE = os.environ.get('DB_ENGINE', 'mysql').lower()
 
 if DB_ENGINE == 'sqlite':
     DATABASES = {
@@ -90,9 +90,9 @@ else:
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.mysql',
-            'NAME': os.environ.get('DB_NAME', 'jeevithaya_db'),
+            'NAME': os.environ.get('DB_NAME', 'jeevithaya_mit'),
             'USER': os.environ.get('DB_USER', 'root'),
-            'PASSWORD': os.environ.get('DB_PASSWORD', 'Ninjabole@123'),
+            'PASSWORD': os.environ.get('DB_PASSWORD', ''),
             'HOST': os.environ.get('DB_HOST', 'localhost'),
             'PORT': os.environ.get('DB_PORT', '3306'),
             'OPTIONS': {
