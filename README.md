@@ -6,9 +6,7 @@
 [![Course](https://img.shields.io/badge/Course-MIT%202025%2F2026-purple.svg)]()
 
 > **Master of Information Technology (MIT) Assignment**  
-> **Developed by:** Group 5 (MIT 2025/2026 Batch)  
-> 
-> 🚀 **Teammates & Friends:** Check the [**Team Setup & Onboarding Guide (SETUP_GUIDE_FOR_TEAM.md)**](SETUP_GUIDE_FOR_TEAM.md) to get the app running on your computer in under 5 minutes!
+> **Developed by:** Group 5 (MIT 2025/2026 Batch)
 
 ---
 
@@ -108,13 +106,10 @@ python manage.py test bloodbank
 
 ---
 
-## 📂 Documentation Handbooks
+## 🖥️ Presentation & Deliverables
 
-Complete assignment deliverables are available in the [`docs/`](docs/) directory:
-* 📖 [**User Manual (USER_MANUAL.md)**](docs/USER_MANUAL.md): Step-by-step module operating instructions.
-* 📊 [**Presentation Slides Outline (PRESENTATION_SLIDES.md)**](docs/PRESENTATION_SLIDES.md): 15-slide deck outline with team member divisions and speaker scripts.
-* 🎓 [**Codebase Study Guide & Viva Prep (CODEBASE_STUDY_GUIDE.md)**](docs/CODEBASE_STUDY_GUIDE.md): Request life-cycle diagrams, code line references, and top 10 viva defense Q&A.
-* 📐 [**System UML & Architecture Diagrams (SYSTEM_DIAGRAMS.md)**](docs/SYSTEM_DIAGRAMS.md): Full UML Class Diagram, Entity-Relationship Diagram (ERD), and clinical workflow Sequence Diagrams.
+* 📊 **In-Browser Presentation Deck:** Run the application and open `http://127.0.0.1:8000/presentation.html` (or click **Slides Deck ↗** in the dashboard sidebar).
+* 🧪 **Automated Test Suite:** Run `python manage.py test bloodbank` to verify OOP entities, services, and API endpoints.
 
 ---
 

@@ -32,3 +32,8 @@ Desktop.ini
 staticfiles/
 
 *.zip
+
+# Docs & assignment private notes
+docs/
+DOCS/
+SETUP_GUIDE_FOR_TEAM.md
