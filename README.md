@@ -63,12 +63,12 @@ $env:DB_ENGINE="sqlite"
 ```
 
 #### Option B: MySQL (Production / WAMP Server)
-Ensure MySQL is running on port `3306` with database `jeevithaya_db` created:
+Ensure MySQL is running on port `3306` with database `jeevithaya_mit` created:
 ```powershell
 $env:DB_ENGINE="mysql"
-$env:DB_NAME="jeevithaya_db"
+$env:DB_NAME="jeevithaya_mit"
 $env:DB_USER="root"
-$env:DB_PASSWORD="your_password"
+$env:DB_PASSWORD=""
 ```
 
 ### 4. Run Migrations & Seed Sample Data
