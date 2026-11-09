@@ -1,5 +1,4 @@
-const session = applyRBAC();
-if (!session) return;
+const session = applyRBAC() || {};
 
 const form = document.getElementById("profileForm");
 const msg = document.getElementById("msg");
