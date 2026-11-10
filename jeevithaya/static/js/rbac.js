@@ -22,11 +22,22 @@ function getTheme() {
 }
 
 function setTheme(theme) {
-  document.documentElement.setAttribute("data-theme", theme);
+  const t = (theme === "light") ? "light" : "dark";
+  document.documentElement.setAttribute("data-theme", t);
+  if (document.body) {
+    document.body.setAttribute("data-theme", t);
+    if (t === "light") {
+      document.body.classList.add("theme-light");
+      document.body.classList.remove("theme-dark");
+    } else {
+      document.body.classList.add("theme-dark");
+      document.body.classList.remove("theme-light");
+    }
+  }
   try {
-    localStorage.setItem("jv_theme", theme);
+    localStorage.setItem("jv_theme", t);
   } catch (e) {}
-  updateThemeButtons(theme);
+  updateThemeButtons(t);
 }
 
 function toggleTheme() {
@@ -38,18 +49,17 @@ function toggleTheme() {
 function updateThemeButtons(theme) {
   const isLight = theme === "light";
   document.querySelectorAll(".theme-toggle-btn, #themeToggle, #sidebarThemeToggle").forEach(btn => {
-    const icon = btn.querySelector(".theme-icon, #themeIcon");
     const label = btn.querySelector(".theme-label, #themeLabel");
-    if (icon) icon.textContent = isLight ? "🌙" : "☀️";
-    if (label) label.textContent = isLight ? "Dark Mode" : "Light Mode";
+    if (label) {
+      label.textContent = isLight ? "Light" : "Dark";
+    }
     btn.setAttribute("title", isLight ? "Switch to Dark Mode" : "Switch to Light Mode");
   });
 }
 
 function initTheme() {
   const currentTheme = getTheme();
-  document.documentElement.setAttribute("data-theme", currentTheme);
-  updateThemeButtons(currentTheme);
+  setTheme(currentTheme);
 
   // Wire up theme toggles
   document.querySelectorAll(".theme-toggle-btn, #themeToggle, #sidebarThemeToggle").forEach(btn => {
@@ -78,16 +88,15 @@ function initLiveClock() {
   function update() {
     const now = new Date();
     if (dateEl) {
-      dateEl.textContent = now.toLocaleDateString(undefined, {
-        weekday: "short",
-        day: "numeric",
+      dateEl.textContent = now.toLocaleDateString("en-US", {
         month: "short",
+        day: "numeric",
         year: "numeric"
       });
     }
     if (timeEl) {
-      timeEl.textContent = now.toLocaleTimeString(undefined, {
-        hour: "2-digit",
+      timeEl.textContent = now.toLocaleTimeString("en-US", {
+        hour: "numeric",
         minute: "2-digit",
         second: "2-digit",
         hour12: true

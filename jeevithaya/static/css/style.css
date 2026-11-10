@@ -2,32 +2,34 @@
    JEEVITHAYA — STYLESHEET WITH LIGHT / DARK THEME SYSTEM
    ========================================================= */
 
-:root, [data-theme="dark"] {
+:root, [data-theme="dark"], body[data-theme="dark"] {
   --bg: #000000;
   --bg-page: linear-gradient(135deg, #000000 60%, #160204 100%);
-  --bg-sidebar: #050505;
-  --bg-main: #0a0a0a;
-  --card: #111113;
-  --card-hover: #17171a;
+  --bg-sidebar: #070708;
+  --bg-main: #0c0c0e;
+  --card: #141416;
+  --card-hover: #1a1a1e;
   --muted: #a1a1aa;
-  --text: #ffffff;
-  --text-heading: #fafafa;
+  --text: #f4f4f5;
+  --text-heading: #ffffff;
   --border: #27272a;
   --input-bg: #09090b;
   --input-border: #27272a;
-  --chip-bg: #09090b;
-  --user-chip-bg: #111113;
-  --clock-bg: #111113;
+  --chip-bg: #141416;
+  --user-chip-bg: #141416;
+  --clock-bg: #141416;
   --table-border: #222225;
-  --table-hover: rgba(255, 255, 255, 0.03);
+  --table-hover: rgba(255, 255, 255, 0.04);
   --primary: #d90429;     /* Signature Crimson */
   --primary2: #a4031f;    /* Dark Crimson */
-  --danger: #ff4d4d;
-  --shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+  --danger: #ef4444;
+  --shadow: 0 4px 16px rgba(0, 0, 0, 0.45);
   --card-glow: 0 4px 20px rgba(217, 4, 41, 0.15);
+  --sun-display: none;
+  --moon-display: inline-block;
 }
 
-[data-theme="light"] {
+[data-theme="light"], body[data-theme="light"], .theme-light {
   --bg: #f8fafc;
   --bg-page: linear-gradient(135deg, #f8fafc 60%, #ffe4e6 100%);
   --bg-sidebar: #ffffff;
@@ -43,13 +45,15 @@
   --chip-bg: #f8fafc;
   --user-chip-bg: #ffffff;
   --clock-bg: #ffffff;
-  --table-border: #f1f5f9;
-  --table-hover: rgba(0, 0, 0, 0.02);
+  --table-border: #e2e8f0;
+  --table-hover: rgba(0, 0, 0, 0.03);
   --primary: #d90429;
   --primary2: #b91c1c;
   --danger: #ef4444;
-  --shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
+  --shadow: 0 4px 16px rgba(15, 23, 42, 0.08);
   --card-glow: 0 4px 20px rgba(217, 4, 41, 0.08);
+  --sun-display: inline-block;
+  --moon-display: none;
 }
 
 * {
@@ -347,14 +351,15 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 22px;
+  margin-bottom: 24px;
+  gap: 16px;
   flex-wrap: wrap;
-  gap: 14px;
 }
 
 .topbar h2 {
   margin: 0;
-  font-size: 24px;
+  font-size: 22px;
+  font-weight: 700;
   color: var(--text-heading);
 }
 
@@ -365,67 +370,66 @@ body {
 .topbar-actions {
   display: flex;
   align-items: center;
-  gap: 12px;
-  flex-wrap: wrap;
+  gap: 10px;
+  flex-wrap: nowrap;
 }
 
 .clock-widget {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 10px;
-  background: var(--clock-bg);
+  gap: 8px;
+  height: 38px;
+  padding: 0 14px;
+  border-radius: 8px;
+  background: var(--card);
   border: 1px solid var(--border);
-  padding: 8px 14px;
-  border-radius: 12px;
   box-shadow: var(--shadow);
   font-size: 13px;
+  white-space: nowrap;
 }
 
-.clock-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: var(--primary);
-  display: inline-block;
-  animation: pulse-dot 1.6s infinite ease-in-out;
-}
-
-@keyframes pulse-dot {
-  0% { transform: scale(0.9); opacity: 0.6; }
-  50% { transform: scale(1.25); opacity: 1; box-shadow: 0 0 8px var(--primary); }
-  100% { transform: scale(0.9); opacity: 0.6; }
+.clock-icon {
+  stroke: var(--primary);
+  flex-shrink: 0;
 }
 
 .clock-date {
   font-weight: 500;
   color: var(--muted);
+  font-size: 13px;
 }
 
 .clock-divider {
   color: var(--border);
   font-weight: 300;
+  margin: 0 2px;
 }
 
 .clock-time {
-  font-weight: 700;
+  font-weight: 600;
   color: var(--text);
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
   letter-spacing: 0.5px;
+  font-size: 13px;
 }
 
 .theme-toggle-btn {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  padding: 8px 14px;
-  border-radius: 12px;
-  background: var(--clock-bg);
+  height: 38px;
+  padding: 0 14px;
+  border-radius: 8px;
+  background: var(--card);
   border: 1px solid var(--border);
   color: var(--text);
   font-size: 13px;
-  font-weight: 600;
+  font-weight: 500;
   cursor: pointer;
   box-shadow: var(--shadow);
+  white-space: nowrap;
+  user-select: none;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .theme-toggle-btn:hover {
@@ -434,15 +438,34 @@ body {
   transform: translateY(-1px);
 }
 
+.theme-toggle-btn .sun-icon {
+  display: var(--sun-display);
+  stroke: #f59e0b;
+}
+
+.theme-toggle-btn .moon-icon {
+  display: var(--moon-display);
+  stroke: #60a5fa;
+}
+
 .user-chip {
-  padding: 8px 14px;
-  border-radius: 12px;
-  background: var(--user-chip-bg);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 38px;
+  padding: 0 14px;
+  border-radius: 8px;
+  background: var(--card);
   border: 1px solid var(--border);
   font-size: 13px;
   color: var(--text);
   font-weight: 500;
   box-shadow: var(--shadow);
+  white-space: nowrap;
+}
+
+.user-chip svg {
+  stroke: var(--muted);
 }
 
 /* =========================================================
@@ -627,5 +650,5 @@ body {
   .sidebar { width: 100%; border-right: none; border-bottom: 1px solid var(--border); }
   .grid-form { grid-template-columns: 1fr; }
   .grid-form .span-2, .grid-form .actions { grid-column: span 1; }
-  .topbar { flex-direction: column; align-items: flex-start; }
+  .topbar-actions { flex-wrap: wrap; }
 }
