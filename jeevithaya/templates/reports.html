@@ -5,7 +5,7 @@
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Jeevithaya | Reports</title>
-  <link rel="stylesheet" href="{% static 'css/style.css' %}?v=3.7" />
+  <link rel="stylesheet" href="{% static 'css/style.css' %}?v=3.8" />
 </head>
 <body>
   <div class="layout">
@@ -17,28 +17,18 @@
       </div>
 
 <nav class="menu">
-  <a class="menu-item" href="dashboard.html" data-role="System Admin,Hospital Admin,Front Office,Lab Assistant">Dashboard</a>
-
-  <a class="menu-item" href="donors.html" data-role="System Admin,Hospital Admin,Front Office,Lab Assistant">Donors</a>
-  <a class="menu-item" href="patients.html" data-role="System Admin,Hospital Admin,Front Office,Lab Assistant">Patients</a>
-
-  <a class="menu-item" href="requests.html" data-role="System Admin,Hospital Admin,Front Office,Lab Assistant">Requests</a>
-
-  <a class="menu-item" href="inventory.html" data-role="System Admin,Hospital Admin,Lab Assistant">Inventory</a>
-
-  <a class="menu-item" href="donation.html" data-role="System Admin,Lab Assistant">Donation</a>
-
-  <a class="menu-item" href="verification.html" data-role="System Admin,Lab Assistant">Verification</a>
-
-  <a class="menu-item" href="disposal.html" data-role="System Admin,Lab Assistant">Disposal</a>
-
-  <a class="menu-item" href="reports.html" data-role="System Admin,Hospital Admin">Reports</a>
-
-  <a class="menu-item" href="create_user.html" data-role="System Admin">Create User</a>
-  <a class="menu-item" href="profile.html"
-   data-role="System Admin,Hospital Admin,Front Office,Lab Assistant">
-   Profile
-</a>
+  <a class="menu-item" href="dashboard.html" data-role="system_admin,hospital_admin,frontoffice_user,lab_assistant">Dashboard</a>
+  <a class="menu-item" href="donors.html" data-role="system_admin,hospital_admin,frontoffice_user,lab_assistant">Donors</a>
+  <a class="menu-item" href="patients.html" data-role="system_admin,hospital_admin,frontoffice_user,lab_assistant">Patients</a>
+  <a class="menu-item" href="requests.html" data-role="system_admin,hospital_admin,frontoffice_user,lab_assistant">Requests</a>
+  <a class="menu-item" href="inventory.html" data-role="system_admin,hospital_admin,lab_assistant">Inventory</a>
+  <a class="menu-item" href="donation.html" data-role="system_admin,lab_assistant">Donation</a>
+  <a class="menu-item" href="verification.html" data-role="system_admin,lab_assistant">Verification</a>
+  <a class="menu-item" href="disposal.html" data-role="system_admin,lab_assistant">Disposal</a>
+  <a class="menu-item" href="reports.html" data-role="system_admin,hospital_admin">Reports</a>
+  <a class="menu-item" href="create_user.html" data-role="system_admin">Create User</a>
+  <a class="menu-item" href="profile.html" data-role="system_admin,hospital_admin,frontoffice_user,lab_assistant">Profile</a>
+  <a class="menu-item" href="presentation.html" data-role="system_admin,hospital_admin,frontoffice_user,lab_assistant" target="_blank" style="color: #ef4444; font-weight: 600;">?? Slides Deck ?</a>
 </nav>
 
 
@@ -173,12 +163,14 @@
     </main>
   </div>
 
-  <script src="{% static 'js/rbac.js' %}?v=3.7"></script>
-  <script src="{% static 'js/api.js' %}?v=3.7"></script>
+  <script src="{% static 'js/rbac.js' %}?v=3.8"></script>
+  <script src="{% static 'js/api.js' %}?v=3.8"></script>
   <script src="{% static 'js/reports.js' %}"></script>
 
 </body>
 </html>
+
+
 
 
 
