@@ -39,7 +39,7 @@ async function apiRequest(endpoint, method = 'GET', data = null) {
 
 // Authentication API
 const authAPI = {
-  login: (email, password, role) => apiRequest('/auth/login/', 'POST', { email, password, role }),
+  login: (email, password) => apiRequest('/auth/login/', 'POST', { email, password }),
   logout: () => apiRequest('/auth/logout/', 'POST'),
   me: () => apiRequest('/auth/me/', 'GET'),
 };

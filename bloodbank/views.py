@@ -126,15 +126,11 @@ def api_auth_login(request):
         # Lookup user by email
         user = User.objects.filter(Email__iexact=email).first()
         if not user:
-            return JsonResponse({'error': 'Invalid credentials.'}, status=401)
-
-        # Validate role if provided
-        if role and user.Role != role:
-            return JsonResponse({'error': f'Account role mismatch. User is registered as {user.Role}.'}, status=401)
+            return JsonResponse({'error': 'Invalid email or password.'}, status=401)
 
         # Validate password using encapsulated OOP method
         if not user.check_password(password):
-            return JsonResponse({'error': 'Invalid credentials.'}, status=401)
+            return JsonResponse({'error': 'Invalid email or password.'}, status=401)
 
         # Store session
         user_dict = model_to_dict(user)

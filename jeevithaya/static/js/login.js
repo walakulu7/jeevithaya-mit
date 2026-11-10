@@ -84,18 +84,17 @@ forgotLink.addEventListener("click", (e) => {
 form.addEventListener("submit", async (e) => {
   e.preventDefault();
 
-  const role = document.querySelector('input[name="role"]:checked')?.value;
   const email = document.getElementById("email").value.trim().toLowerCase();
   const password = passwordEl.value.trim();
   const remember = document.getElementById("remember").checked;
 
-  if (!email) return showError("Please enter email.");
-  if (!password) return showError("Please enter password.");
+  if (!email) return showError("Please enter your email.");
+  if (!password) return showError("Please enter your password.");
 
   // Try authenticating via Django Backend API first
   if (window.authAPI && typeof window.authAPI.login === "function") {
     try {
-      const response = await window.authAPI.login(email, password, role);
+      const response = await window.authAPI.login(email, password);
       if (response && response.user) {
         const u = response.user;
         const session = {
@@ -112,10 +111,10 @@ form.addEventListener("submit", async (e) => {
           sessionStorage.setItem("jv_session", JSON.stringify(session));
         }
 
-        showOk("Login success! Redirecting...");
+        showOk(`Welcome back, ${u.Name || 'User'}! Redirecting...`);
         setTimeout(() => {
           window.location.href = "dashboard.html";
-        }, 600);
+        }, 500);
         return;
       }
     } catch (apiErr) {
@@ -131,16 +130,15 @@ form.addEventListener("submit", async (e) => {
   const users = loadUsers();
   const user = users.find(
     u => u.email.toLowerCase() === email && 
-         u.role === role && 
          u.password === password
   );
 
   if (!user) {
     if (users.length === 0 && password === "1234") {
       const session = {
-        role,
+        role: "system_admin",
         email,
-        name: role.replace(/_/g, " ").replace(/\b\w/g, l => l.toUpperCase()),
+        name: email.split("@")[0] || "User",
         loginAt: new Date().toISOString()
       };
 
@@ -153,10 +151,10 @@ form.addEventListener("submit", async (e) => {
       showOk("Login success! Redirecting...");
       setTimeout(() => {
         window.location.href = "dashboard.html";
-      }, 600);
+      }, 500);
       return;
     }
-    return showError("Invalid email, password, or role combination.");
+    return showError("Invalid email or password.");
   }
 
   // Save session with user details
