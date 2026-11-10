@@ -5,7 +5,7 @@
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Jeevithaya | Dashboard</title>
-  <link rel="stylesheet" href="{% static 'css/style.css' %}?v=3.5" />
+  <link rel="stylesheet" href="{% static 'css/style.css' %}?v=3.6" />
 </head>
 <body>
   <div class="layout">
@@ -106,32 +106,6 @@
         </div>
       </header>
 
-      <!-- User Profile Card -->
-      <section class="card profile-card">
-        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;">
-          <h3>User Profile</h3>
-          <a href="profile.html" class="btn btn-ghost" style="font-size: 14px; padding: 6px 12px;">Edit Profile</a>
-        </div>
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px;">
-          <div>
-            <p class="muted" style="font-size: 13px; margin-bottom: 4px;">Name</p>
-            <p style="font-weight: 600;" id="profileName">-</p>
-          </div>
-          <div>
-            <p class="muted" style="font-size: 13px; margin-bottom: 4px;">User ID</p>
-            <p style="font-weight: 600;" id="profileUserId">-</p>
-          </div>
-          <div>
-            <p class="muted" style="font-size: 13px; margin-bottom: 4px;">Email</p>
-            <p style="font-weight: 600;" id="profileEmail">-</p>
-          </div>
-          <div>
-            <p class="muted" style="font-size: 13px; margin-bottom: 4px;">Role</p>
-            <p style="font-weight: 600;" id="profileRole">-</p>
-          </div>
-        </div>
-      </section>
-
       <!-- Cards -->
       <section class="cards">
         <div class="card stat">
@@ -175,9 +149,9 @@
     </main>
   </div>
 
-  <script src="{% static 'js/rbac.js' %}?v=3.5"></script>
-  <script src="{% static 'js/api.js' %}?v=3.5"></script>
-  <script src="{% static 'js/dashboard.js' %}?v=3.5"></script>
+  <script src="{% static 'js/rbac.js' %}?v=3.6"></script>
+  <script src="{% static 'js/api.js' %}?v=3.6"></script>
+  <script src="{% static 'js/dashboard.js' %}?v=3.6"></script>
 </body>
 </html>
 
