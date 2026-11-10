@@ -251,6 +251,33 @@ function render() {
       URL.revokeObjectURL(url);
     };
   }
+
+  // Export CSV Report
+  const exportCsvBtn = document.getElementById("exportCsvBtn");
+  if (exportCsvBtn) {
+    exportCsvBtn.onclick = () => {
+      let csv = "Type,ID,Date,Details\n";
+      activity.forEach(row => {
+        const cleanDetails = (row.details || "").replace(/"/g, '""');
+        csv += `"${row.type}","${row.id}","${row.date}","${cleanDetails}"\n`;
+      });
+      const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `jeevithaya_activity_${days}_days.csv`;
+      a.click();
+      URL.revokeObjectURL(url);
+    };
+  }
+
+  // Print Report
+  const printBtn = document.getElementById("printBtn");
+  if (printBtn) {
+    printBtn.onclick = () => {
+      window.print();
+    };
+  }
 }
 
 if (rangeSel) rangeSel.addEventListener("change", render);

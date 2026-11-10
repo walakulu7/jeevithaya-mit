@@ -131,7 +131,13 @@ function applyRBAC() {
     }
   }
 
-  const norm = str => (str || "").toLowerCase().replace(/[\s_]+/g, "");
+  const norm = str => {
+    let s = (str || "").toLowerCase().replace(/[\s_]+/g, "");
+    if (s === "frontoffice") s = "frontofficeuser";
+    if (s === "lab") s = "labassistant";
+    if (s === "admin") s = "systemadmin";
+    return s;
+  };
   const userRoleNorm = norm(session.role);
 
   // Hide/show menu items by role
@@ -144,31 +150,43 @@ function applyRBAC() {
   });
 
   // Mark active menu item
-  const currentPage = window.location.pathname.split("/").pop() || "dashboard.html";
+  let currentPage = window.location.pathname.split("/").filter(Boolean).pop() || "dashboard.html";
+  if (!currentPage.includes(".")) {
+    currentPage += ".html";
+  }
   document.querySelectorAll(".menu-item").forEach(item => {
-    if (item.getAttribute("href") === currentPage) {
+    const href = item.getAttribute("href") || "";
+    if (href === currentPage || (currentPage === "" && href === "dashboard.html")) {
       item.classList.add("active");
     } else {
       item.classList.remove("active");
     }
   });
 
-  // Show user email (optional)
+  // Show user email
   const userEmailEl = document.getElementById("userEmail");
-  if (userEmailEl && !userEmailEl.textContent) {
-    userEmailEl.textContent = session.email || "";
+  if (userEmailEl && session.email) {
+    userEmailEl.textContent = session.email;
   }
 
   // Show welcome role
+  const roleMap = {
+    system_admin: "System Admin",
+    hospital_admin: "Hospital Admin",
+    frontoffice_user: "Front Office User",
+    lab_assistant: "Lab Assistant"
+  };
+
   const roleInfoEl = document.getElementById("roleInfo");
-  if (roleInfoEl && !roleInfoEl.textContent) {
-    const roleMap = {
-      system_admin: "System Admin",
-      hospital_admin: "Hospital Admin",
-      frontoffice_user: "Front Office User",
-      lab_assistant: "Lab Assistant"
-    };
-    roleInfoEl.textContent = `Role: ${roleMap[session.role] || session.role || "User"}`;
+  if (roleInfoEl) {
+    const displayRole = roleMap[session.role] || session.role || "User";
+    roleInfoEl.textContent = `Role: ${displayRole}`;
+  }
+
+  const welcomeEl = document.getElementById("welcome");
+  if (welcomeEl && welcomeEl.textContent === "Dashboard") {
+    const displayRole = roleMap[session.role] || session.role || "User";
+    welcomeEl.textContent = `Welcome, ${session.name || displayRole}`;
   }
 
   // Logout button handler

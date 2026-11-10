@@ -187,3 +187,25 @@ function showOk(text){
   msg.className = "msg ok";
   msg.textContent = text;
 }
+
+// Quick Demo Account Click Handler
+document.querySelectorAll(".demo-chip").forEach(chip => {
+  chip.addEventListener("click", () => {
+    const email = chip.getAttribute("data-email");
+    const pwd = chip.getAttribute("data-pwd");
+    const emailInput = document.getElementById("email");
+    const pwdInput = document.getElementById("password");
+    if (emailInput && email) emailInput.value = email;
+    if (pwdInput && pwd) pwdInput.value = pwd;
+
+    // Visual feedback
+    chip.style.borderColor = "var(--primary)";
+    setTimeout(() => {
+      chip.style.borderColor = "";
+    }, 400);
+
+    // Focus submit button
+    const submitBtn = form.querySelector("button[type='submit']");
+    if (submitBtn) submitBtn.focus();
+  });
+});

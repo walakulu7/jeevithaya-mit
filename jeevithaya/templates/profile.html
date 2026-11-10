@@ -4,60 +4,125 @@
 <head>
   <meta charset="UTF-8">
   <title>Jeevithaya | Profile</title>
-  <link rel="stylesheet" href="{% static 'css/style.css' %}?v=3.8" />
+  <link rel="stylesheet" href="{% static 'css/style.css' %}?v=4.0" />
 </head>
 <body>
 
 <div class="layout">
   <!-- Sidebar -->
   <aside class="sidebar">
-    <div class="side-brand">
-      <div class="logo small">JV</div>
-      <span>Jeevithaya</span>
+    <div class="brand">
+      <div class="logo">JV</div>
+      <div>
+        <h1>Jeevithaya</h1>
+        <p class="muted">Centralized Blood & Plasma</p>
+      </div>
     </div>
 
     <nav class="menu">
-  <a class="menu-item" href="dashboard.html" data-role="system_admin,hospital_admin,frontoffice_user,lab_assistant">Dashboard</a>
-  <a class="menu-item" href="donors.html" data-role="system_admin,hospital_admin,frontoffice_user,lab_assistant">Donors</a>
-  <a class="menu-item" href="patients.html" data-role="system_admin,hospital_admin,frontoffice_user,lab_assistant">Patients</a>
-  <a class="menu-item" href="requests.html" data-role="system_admin,hospital_admin,frontoffice_user,lab_assistant">Requests</a>
-  <a class="menu-item" href="inventory.html" data-role="system_admin,hospital_admin,lab_assistant">Inventory</a>
-  <a class="menu-item" href="donation.html" data-role="system_admin,lab_assistant">Donation</a>
-  <a class="menu-item" href="verification.html" data-role="system_admin,lab_assistant">Verification</a>
-  <a class="menu-item" href="disposal.html" data-role="system_admin,lab_assistant">Disposal</a>
-  <a class="menu-item" href="reports.html" data-role="system_admin,hospital_admin">Reports</a>
-  <a class="menu-item" href="create_user.html" data-role="system_admin">Create User</a>
-  <a class="menu-item" href="profile.html" data-role="system_admin,hospital_admin,frontoffice_user,lab_assistant">Profile</a>
-  <a class="menu-item" href="presentation.html" data-role="system_admin,hospital_admin,frontoffice_user,lab_assistant" target="_blank" style="color: #ef4444; font-weight: 600;">?? Slides Deck ?</a>
-</nav>
+      <a class="menu-item" href="dashboard.html" data-role="system_admin,hospital_admin,frontoffice_user,lab_assistant">
+        <svg class="nav-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>
+        <span>Dashboard</span>
+      </a>
+      <a class="menu-item" href="donors.html" data-role="system_admin,hospital_admin,frontoffice_user,lab_assistant">
+        <svg class="nav-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        <span>Donors</span>
+      </a>
+      <a class="menu-item" href="patients.html" data-role="system_admin,hospital_admin,frontoffice_user,lab_assistant">
+        <svg class="nav-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>
+        <span>Patients</span>
+      </a>
+      <a class="menu-item" href="requests.html" data-role="system_admin,hospital_admin,frontoffice_user,lab_assistant">
+        <svg class="nav-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+        <span>Requests</span>
+      </a>
+      <a class="menu-item" href="inventory.html" data-role="system_admin,hospital_admin,lab_assistant">
+        <svg class="nav-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+        <span>Inventory</span>
+      </a>
+      <a class="menu-item" href="donation.html" data-role="system_admin,lab_assistant">
+        <svg class="nav-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/></svg>
+        <span>Donation</span>
+      </a>
+      <a class="menu-item" href="verification.html" data-role="system_admin,lab_assistant">
+        <svg class="nav-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>
+        <span>Verification</span>
+      </a>
+      <a class="menu-item" href="disposal.html" data-role="system_admin,lab_assistant">
+        <svg class="nav-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
+        <span>Disposal</span>
+      </a>
+      <a class="menu-item" href="reports.html" data-role="system_admin,hospital_admin">
+        <svg class="nav-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+        <span>Reports</span>
+      </a>
+      <a class="menu-item" href="create_user.html" data-role="system_admin">
+        <svg class="nav-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>
+        <span>Create User</span>
+      </a>
+      <a class="menu-item active" href="profile.html" data-role="system_admin,hospital_admin,frontoffice_user,lab_assistant">
+        <svg class="nav-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        <span>Profile</span>
+      </a>
+      <a class="menu-item" href="presentation.html" data-role="system_admin,hospital_admin,frontoffice_user,lab_assistant" target="_blank" style="color: var(--primary); font-weight: 600;">
+        <svg class="nav-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--primary)" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+        <span>Slides Deck ↗</span>
+      </a>
+    </nav>
 
-    <!-- Sidebar Theme Switcher -->
-      <button id="sidebarThemeToggle" class="btn btn-ghost theme-toggle-btn" style="margin-top: auto; margin-bottom: 8px; justify-content: center; width: 100%;">
-        <svg class="sun-icon" viewBox="0 0 24 24" width="15" height="15" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="12" cy="12" r="5"></circle>
-          <line x1="12" y1="1" x2="12" y2="3"></line>
-          <line x1="12" y1="21" x2="12" y2="23"></line>
-          <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
-          <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
-          <line x1="1" y1="12" x2="3" y2="12"></line>
-          <line x1="21" y1="12" x2="23" y2="12"></line>
-          <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
-          <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
-        </svg>
-        <svg class="moon-icon" viewBox="0 0 24 24" width="15" height="15" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
-        </svg>
-        <span class="theme-label">Theme</span>
-      </button>
-
-      <button id="logoutBtn" class="btn btn-ghost logout" style="margin-top: 0;">Logout</button>
+    <div class="sidebar-footer">
+      <button id="logoutBtn" class="btn btn-ghost logout">Logout</button>
+    </div>
   </aside>
 
   <!-- Main -->
   <main class="main">
     <header class="topbar">
-      <h2>My Profile</h2>
-      <p class="muted">View and manage your account</p>
+      <div class="topbar-title-area">
+        <h2>My Profile</h2>
+        <p class="muted">View and manage your account credentials</p>
+      </div>
+
+      <div class="topbar-actions">
+        <!-- Live Date & Time Clock -->
+        <div class="clock-widget" title="Live System Time">
+          <svg class="clock-icon" viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <polyline points="12 6 12 12 16 14"></polyline>
+          </svg>
+          <span class="clock-date" id="clockDate">--</span>
+          <span class="clock-divider">|</span>
+          <span class="clock-time" id="clockTime">--:--:--</span>
+        </div>
+
+        <!-- Theme Switcher -->
+        <button id="themeToggle" class="theme-toggle-btn" title="Toggle Dark/Light Theme" type="button">
+          <svg class="sun-icon" viewBox="0 0 24 24" width="15" height="15" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="5"></circle>
+            <line x1="12" y1="1" x2="12" y2="3"></line>
+            <line x1="12" y1="21" x2="12" y2="23"></line>
+            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+            <line x1="1" y1="12" x2="3" y2="12"></line>
+            <line x1="21" y1="12" x2="23" y2="12"></line>
+            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+          </svg>
+          <svg class="moon-icon" viewBox="0 0 24 24" width="15" height="15" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+          </svg>
+          <span class="theme-label">Theme</span>
+        </button>
+
+        <!-- User Chip -->
+        <div class="user-chip">
+          <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+            <circle cx="12" cy="7" r="4"></circle>
+          </svg>
+          <span id="userEmail"></span>
+        </div>
+      </div>
     </header>
 
     <section class="card">
@@ -95,9 +160,9 @@
   </main>
 </div>
 
-<script src="{% static 'js/rbac.js' %}?v=3.8?v=2.1"></script>
-<script src="{% static 'js/api.js' %}?v=3.8?v=2.1"></script>
-<script src="{% static 'js/profile.js' %}?v=2.1"></script>
+<script src="{% static 'js/rbac.js' %}?v=4.0"></script>
+<script src="{% static 'js/api.js' %}?v=4.0"></script>
+<script src="{% static 'js/profile.js' %}?v=4.0"></script>
 </body>
 </html>
 
