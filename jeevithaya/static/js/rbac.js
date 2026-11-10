@@ -1,4 +1,4 @@
-// Role-Based Access Control (RBAC) Module
+// Role-Based Access Control (RBAC), Theme & UI Utilities Module
 
 function getSession() {
   try {
@@ -8,6 +8,100 @@ function getSession() {
     return null;
   }
 }
+
+// =========================================================
+// THEME MANAGER (DARK / LIGHT)
+// =========================================================
+
+function getTheme() {
+  try {
+    return localStorage.getItem("jv_theme") || "dark";
+  } catch {
+    return "dark";
+  }
+}
+
+function setTheme(theme) {
+  document.documentElement.setAttribute("data-theme", theme);
+  try {
+    localStorage.setItem("jv_theme", theme);
+  } catch (e) {}
+  updateThemeButtons(theme);
+}
+
+function toggleTheme() {
+  const current = document.documentElement.getAttribute("data-theme") || getTheme();
+  const next = current === "dark" ? "light" : "dark";
+  setTheme(next);
+}
+
+function updateThemeButtons(theme) {
+  const isLight = theme === "light";
+  document.querySelectorAll(".theme-toggle-btn, #themeToggle, #sidebarThemeToggle").forEach(btn => {
+    const icon = btn.querySelector(".theme-icon, #themeIcon");
+    const label = btn.querySelector(".theme-label, #themeLabel");
+    if (icon) icon.textContent = isLight ? "🌙" : "☀️";
+    if (label) label.textContent = isLight ? "Dark Mode" : "Light Mode";
+    btn.setAttribute("title", isLight ? "Switch to Dark Mode" : "Switch to Light Mode");
+  });
+}
+
+function initTheme() {
+  const currentTheme = getTheme();
+  document.documentElement.setAttribute("data-theme", currentTheme);
+  updateThemeButtons(currentTheme);
+
+  // Wire up theme toggles
+  document.querySelectorAll(".theme-toggle-btn, #themeToggle, #sidebarThemeToggle").forEach(btn => {
+    if (!btn.hasAttribute("data-theme-listener")) {
+      btn.setAttribute("data-theme-listener", "true");
+      btn.addEventListener("click", (e) => {
+        e.preventDefault();
+        toggleTheme();
+      });
+    }
+  });
+}
+
+// Apply theme immediately to prevent screen flash
+initTheme();
+
+// =========================================================
+// LIVE CLOCK WIDGET (DATE & TIME)
+// =========================================================
+
+function initLiveClock() {
+  const dateEl = document.getElementById("clockDate");
+  const timeEl = document.getElementById("clockTime");
+  if (!dateEl && !timeEl) return;
+
+  function update() {
+    const now = new Date();
+    if (dateEl) {
+      dateEl.textContent = now.toLocaleDateString(undefined, {
+        weekday: "short",
+        day: "numeric",
+        month: "short",
+        year: "numeric"
+      });
+    }
+    if (timeEl) {
+      timeEl.textContent = now.toLocaleTimeString(undefined, {
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+        hour12: true
+      });
+    }
+  }
+
+  update();
+  setInterval(update, 1000);
+}
+
+// =========================================================
+// RBAC ENGINE
+// =========================================================
 
 function applyRBAC() {
   let session = getSession();
@@ -81,8 +175,26 @@ function applyRBAC() {
     });
   }
 
+  // Initialize theme & clock on document readiness
+  initTheme();
+  initLiveClock();
+
   return session;
+}
+
+// Also wire on DOMContentLoaded in case elements loaded after script
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", () => {
+    initTheme();
+    initLiveClock();
+  });
+} else {
+  initTheme();
+  initLiveClock();
 }
 
 window.getSession = getSession;
 window.applyRBAC = applyRBAC;
+window.getTheme = getTheme;
+window.setTheme = setTheme;
+window.toggleTheme = toggleTheme;

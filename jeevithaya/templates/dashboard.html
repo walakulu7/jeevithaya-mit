@@ -46,7 +46,13 @@
 </nav>
 
 
-      <button id="logoutBtn" class="btn btn-ghost logout">Logout</button>
+      <!-- Sidebar Theme Switcher -->
+      <button id="sidebarThemeToggle" class="btn btn-ghost theme-toggle-btn" style="margin-top: auto; margin-bottom: 8px; justify-content: center; width: 100%;">
+        <span class="theme-icon">☀️</span>
+        <span class="theme-label">Light Mode</span>
+      </button>
+
+      <button id="logoutBtn" class="btn btn-ghost logout" style="margin-top: 0;">Logout</button>
     </aside>
 
     <!-- Main -->
@@ -57,8 +63,26 @@
           <h2 id="welcome">Dashboard</h2>
           <p id="roleInfo" class="muted"></p>
         </div>
-        <div class="user-chip">
-          <span id="userEmail"></span>
+
+        <div class="topbar-actions">
+          <!-- Live Date & Time Clock -->
+          <div id="dashboardClock" class="clock-widget" title="Current Date & Time">
+            <span class="clock-dot"></span>
+            <span id="clockDate" class="clock-date">--</span>
+            <span class="clock-divider">|</span>
+            <span id="clockTime" class="clock-time">--:--:--</span>
+          </div>
+
+          <!-- Theme Switcher -->
+          <button id="themeToggle" class="theme-toggle-btn" title="Toggle Light / Dark Mode">
+            <span id="themeIcon">☀️</span>
+            <span id="themeLabel">Light Mode</span>
+          </button>
+
+          <!-- User Chip -->
+          <div class="user-chip">
+            <span id="userEmail"></span>
+          </div>
         </div>
       </header>
 
@@ -131,8 +155,8 @@
     </main>
   </div>
 
-  <script src="{% static 'js/rbac.js' %}?v=2.1"></script>
-  <script src="{% static 'js/api.js' %}?v=2.1"></script>
-  <script src="{% static 'js/dashboard.js' %}?v=2.1"></script>
+  <script src="{% static 'js/rbac.js' %}?v=2.3"></script>
+  <script src="{% static 'js/api.js' %}?v=2.3"></script>
+  <script src="{% static 'js/dashboard.js' %}?v=2.3"></script>
 </body>
 </html>
