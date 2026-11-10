@@ -213,6 +213,7 @@ if (form) {
 
     form.reset();
     applyFilters();
+    if (window.closeCollapsibleForm) window.closeCollapsibleForm();
   });
 }
 

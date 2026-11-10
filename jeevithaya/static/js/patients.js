@@ -176,6 +176,7 @@ if (form) {
 
     form.reset();
     applySearch();
+    if (window.closeCollapsibleForm) window.closeCollapsibleForm();
   });
 }
 

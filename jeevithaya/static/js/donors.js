@@ -164,6 +164,7 @@ if (donorForm) {
 
     donorForm.reset();
     applyFilters();
+    if (window.closeCollapsibleForm) window.closeCollapsibleForm();
   });
 }
 

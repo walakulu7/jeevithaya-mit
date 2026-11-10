@@ -132,6 +132,7 @@ if (form) {
 
     render();
     form.reset();
+    if (window.closeCollapsibleForm) window.closeCollapsibleForm();
   });
 }
 

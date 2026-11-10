@@ -149,6 +149,7 @@ if (form) {
     form.reset();
     if (dateEl) dateEl.valueAsDate = new Date();
     applySearch();
+    if (window.closeCollapsibleForm) window.closeCollapsibleForm();
   });
 }
 

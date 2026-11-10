@@ -472,6 +472,52 @@ body {
    CARDS & STATS
    ========================================================= */
 
+.collapsible-form-card {
+  display: none;
+  margin-bottom: 22px;
+  border-left: 4px solid var(--primary);
+  animation: slideFormDown 0.22s ease-out;
+}
+
+.collapsible-form-card.open {
+  display: block;
+}
+
+@keyframes slideFormDown {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.form-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 14px;
+}
+
+.form-header h3 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-heading);
+}
+
+.btn-close-form {
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 500;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--card-hover);
+  color: var(--muted);
+  cursor: pointer;
+}
+
+.btn-close-form:hover {
+  color: var(--text);
+  border-color: var(--danger);
+}
+
 .cards {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));

@@ -191,6 +191,7 @@ if (form) {
     form.reset();
     document.getElementById("requestDate").valueAsDate = new Date();
     applyFilters();
+    if (window.closeCollapsibleForm) window.closeCollapsibleForm();
   });
 }
 

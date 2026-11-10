@@ -5,7 +5,7 @@
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Jeevithaya | Donors</title>
-  <link rel="stylesheet" href="{% static 'css/style.css' %}?v=3.5" />
+  <link rel="stylesheet" href="{% static 'css/style.css' %}?v=3.7" />
 </head>
 <body>
   <div class="layout">
@@ -43,8 +43,21 @@
 
       <!-- Sidebar Theme Switcher -->
       <button id="sidebarThemeToggle" class="btn btn-ghost theme-toggle-btn" style="margin-top: auto; margin-bottom: 8px; justify-content: center; width: 100%;">
-        <span class="theme-icon">??</span>
-        <span class="theme-label">Light Mode</span>
+        <svg class="sun-icon" viewBox="0 0 24 24" width="15" height="15" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="5"></circle>
+          <line x1="12" y1="1" x2="12" y2="3"></line>
+          <line x1="12" y1="21" x2="12" y2="23"></line>
+          <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+          <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+          <line x1="1" y1="12" x2="3" y2="12"></line>
+          <line x1="21" y1="12" x2="23" y2="12"></line>
+          <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+          <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+        </svg>
+        <svg class="moon-icon" viewBox="0 0 24 24" width="15" height="15" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+        </svg>
+        <span class="theme-label">Theme</span>
       </button>
 
       <button id="logoutBtn" class="btn btn-ghost logout" style="margin-top: 0;">Logout</button>
@@ -57,11 +70,17 @@
           <h2>Donor Management</h2>
           <p class="muted">Search & view registered donors</p>
         </div>
+        <button id="toggleFormBtn" class="btn btn-primary" type="button" data-action="toggle-form" data-target="donorFormCard">
+          + Register New Donor
+        </button>
       </header>
 
-      <!-- Register Donor Form -->
-      <section class="card">
-        <h3>Register New Donor</h3>
+      <!-- Register Donor Form (Collapsible) -->
+      <section class="card collapsible-form-card" id="donorFormCard">
+        <div class="form-header">
+          <h3>Register New Donor</h3>
+          <button type="button" class="btn-close-form" data-action="close-form">✕ Cancel</button>
+        </div>
         <form id="donorForm" class="grid-form">
           <div>
             <label class="label">Donor Name</label>
@@ -148,10 +167,11 @@
     </main>
   </div>
 
-  <script src="{% static 'js/rbac.js' %}?v=3.5"></script>
-  <script src="{% static 'js/api.js' %}?v=3.5"></script>
+  <script src="{% static 'js/rbac.js' %}?v=3.7"></script>
+  <script src="{% static 'js/api.js' %}?v=3.7"></script>
   <script src="{% static 'js/donors.js' %}"></script>
 </body>
 </html>
+
 
 

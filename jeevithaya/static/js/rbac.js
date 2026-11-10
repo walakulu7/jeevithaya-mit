@@ -184,22 +184,80 @@ function applyRBAC() {
     });
   }
 
-  // Initialize theme & clock on document readiness
+  // Initialize theme, clock & collapsible forms on document readiness
   initTheme();
   initLiveClock();
+  initCollapsibleForms();
 
   return session;
 }
+
+// Universal Collapsible Form Handler
+function initCollapsibleForms() {
+  document.querySelectorAll("[data-action='toggle-form'], #toggleFormBtn").forEach(btn => {
+    if (!btn.hasAttribute("data-toggle-wired")) {
+      btn.setAttribute("data-toggle-wired", "true");
+      btn.addEventListener("click", () => {
+        const targetId = btn.getAttribute("data-target");
+        const formCard = targetId ? document.getElementById(targetId) : document.querySelector(".collapsible-form-card");
+        if (!formCard) return;
+
+        const isOpen = formCard.classList.contains("open");
+        if (isOpen) {
+          formCard.classList.remove("open");
+          btn.classList.remove("btn-ghost");
+          btn.classList.add("btn-primary");
+          if (btn.hasAttribute("data-default-text")) {
+            btn.innerHTML = btn.getAttribute("data-default-text");
+          }
+        } else {
+          formCard.classList.add("open");
+          btn.classList.remove("btn-primary");
+          btn.classList.add("btn-ghost");
+          if (!btn.hasAttribute("data-default-text")) {
+            btn.setAttribute("data-default-text", btn.innerHTML);
+          }
+          btn.innerHTML = `<span>✕ Close Form</span>`;
+          const firstInput = formCard.querySelector("input:not([type=hidden]):not([disabled]), select:not([disabled])");
+          if (firstInput) firstInput.focus();
+        }
+      });
+    }
+  });
+
+  document.querySelectorAll("[data-action='close-form'], .btn-close-form, #closeFormBtn").forEach(btn => {
+    if (!btn.hasAttribute("data-close-wired")) {
+      btn.setAttribute("data-close-wired", "true");
+      btn.addEventListener("click", () => {
+        closeCollapsibleForm();
+      });
+    }
+  });
+}
+
+function closeCollapsibleForm() {
+  document.querySelectorAll(".collapsible-form-card").forEach(c => c.classList.remove("open"));
+  const toggleBtn = document.querySelector("[data-action='toggle-form'], #toggleFormBtn");
+  if (toggleBtn && toggleBtn.hasAttribute("data-default-text")) {
+    toggleBtn.classList.remove("btn-ghost");
+    toggleBtn.classList.add("btn-primary");
+    toggleBtn.innerHTML = toggleBtn.getAttribute("data-default-text");
+  }
+}
+
+window.closeCollapsibleForm = closeCollapsibleForm;
 
 // Also wire on DOMContentLoaded in case elements loaded after script
 if (document.readyState === "loading") {
   document.addEventListener("DOMContentLoaded", () => {
     initTheme();
     initLiveClock();
+    initCollapsibleForms();
   });
 } else {
   initTheme();
   initLiveClock();
+  initCollapsibleForms();
 }
 
 window.getSession = getSession;
