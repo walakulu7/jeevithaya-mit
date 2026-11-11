@@ -122,6 +122,24 @@ body {
   margin-bottom: 16px;
 }
 
+.auth-card .brand {
+  flex-direction: column;
+  justify-content: center;
+  text-align: center;
+  gap: 10px;
+  margin-bottom: 22px;
+}
+
+.auth-card .brand .logo {
+  width: 76px;
+  height: 76px;
+  border-radius: 18px;
+}
+
+.auth-card .brand h1 {
+  font-size: 24px;
+}
+
 .logo {
   width: 46px;
   height: 46px;
