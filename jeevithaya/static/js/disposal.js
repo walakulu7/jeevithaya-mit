@@ -84,8 +84,8 @@ function render(list) {
       <td>${d.donorId || "-"}</td>
       <td>${d.verificationId || "-"}</td>
       <td>${d.date}</td>
-      <td class="status urgent">${d.reason}</td>
       <td>${d.disposedBy}</td>
+      <td><span class="status urgent">${d.reason}</span></td>
       <td><button class="btn-mini danger" data-id="${d.disposalId}" data-del="${i}">Delete</button></td>
     `;
     tableBody.appendChild(tr);

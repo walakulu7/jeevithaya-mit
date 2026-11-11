@@ -51,7 +51,7 @@ function updateThemeButtons(theme) {
   document.querySelectorAll(".theme-toggle-btn, #themeToggle, #sidebarThemeToggle").forEach(btn => {
     const label = btn.querySelector(".theme-label, #themeLabel");
     if (label) {
-      label.textContent = isLight ? "Light" : "Dark";
+      label.textContent = isLight ? "Dark" : "Light";
     }
     btn.setAttribute("title", isLight ? "Switch to Dark Mode" : "Switch to Light Mode");
   });

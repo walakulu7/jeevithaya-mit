@@ -91,7 +91,7 @@ function render(rows) {
   tableBody.innerHTML = "";
 
   if (!rows || rows.length === 0) {
-    tableBody.innerHTML = `<tr><td colspan="11" style="text-align:center; padding:20px; color:#6b7280;">No inventory records found.</td></tr>`;
+    tableBody.innerHTML = `<tr><td colspan="12" style="text-align:center; padding:20px; color:#6b7280;">No inventory records found.</td></tr>`;
     return;
   }
 
@@ -114,13 +114,15 @@ function render(rows) {
       <td>${u.qty}</td>
       <td>${u.batchNo}</td>
       <td>${u.expiry}</td>
-      <td class="status ${statusClass(finalStatus)}">${finalStatus}</td>
+      <td><span class="status ${statusClass(finalStatus)}">${finalStatus}</span></td>
       <td>
-        <select class="input input-mini" data-unitid="${u.unitId}" data-update="${realIdx}" ${expired ? "disabled" : ""}>
+        <select class="input-mini" data-unitid="${u.unitId}" data-update="${realIdx}" ${expired ? "disabled" : ""}>
           <option ${u.status === "Available" ? "selected" : ""}>Available</option>
           <option ${u.status === "Reserved" ? "selected" : ""}>Reserved</option>
           <option ${u.status === "Issued" ? "selected" : ""}>Issued</option>
         </select>
+      </td>
+      <td>
         <button class="btn-mini danger" data-unitid="${u.unitId}" data-del="${realIdx}">Delete</button>
       </td>
     `;

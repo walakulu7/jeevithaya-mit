@@ -85,8 +85,10 @@ function render(list) {
       <td>${p.hospitalId}</td>
       <td><span class="badge">${p.bloodGroup}</span></td>
       <td>${p.type}</td>
-      <td class="status ${p.urgency === "Critical" ? "urgent" : (p.urgency === "Urgent" ? "pending" : "done")}">
-        ${p.urgency}
+      <td>
+        <span class="status ${p.urgency === "Critical" ? "urgent" : (p.urgency === "Urgent" ? "pending" : "done")}">
+          ${p.urgency}
+        </span>
       </td>
       <td>${p.contact}</td>
       <td>

@@ -36,8 +36,8 @@
   --shadow: 0 4px 16px rgba(0, 0, 0, 0.45);
   --shadow-lg: 0 10px 30px rgba(0, 0, 0, 0.6);
   --card-glow: 0 0 20px rgba(217, 4, 41, 0.12);
-  --sun-display: none;
-  --moon-display: inline-block;
+  --sun-display: inline-block;
+  --moon-display: none;
 }
 
 [data-theme="light"], body[data-theme="light"], .theme-light {
@@ -74,8 +74,8 @@
   --shadow: 0 4px 16px rgba(15, 23, 42, 0.06);
   --shadow-lg: 0 10px 30px rgba(15, 23, 42, 0.08);
   --card-glow: 0 0 20px rgba(217, 4, 41, 0.06);
-  --sun-display: inline-block;
-  --moon-display: none;
+  --sun-display: none;
+  --moon-display: inline-block;
 }
 
 * {
@@ -126,13 +126,24 @@ body {
   width: 46px;
   height: 46px;
   border-radius: 12px;
-  display: grid;
-  place-items: center;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  overflow: hidden;
   font-weight: 800;
   font-size: 16px;
-  background: linear-gradient(135deg, var(--primary), var(--primary2));
+  background: transparent;
   color: #ffffff;
-  box-shadow: 0 4px 14px rgba(217, 4, 41, 0.4);
+  filter: drop-shadow(0 4px 10px rgba(217, 4, 41, 0.35));
+}
+
+.logo img,
+.logo svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: contain;
 }
 
 .brand h1 {
@@ -370,6 +381,28 @@ body {
   margin-bottom: 22px;
   padding: 0 8px;
   color: var(--text-heading);
+}
+
+.sidebar .brand {
+  padding: 0 4px;
+  gap: 11px;
+  margin-bottom: 20px;
+}
+
+.sidebar .brand .logo {
+  width: 40px;
+  height: 40px;
+}
+
+.sidebar .brand h1 {
+  font-size: 17px;
+  line-height: 1.2;
+}
+
+.sidebar .brand .muted {
+  font-size: 11px;
+  margin: 2px 0 0;
+  white-space: nowrap;
 }
 
 .logo.small {
@@ -730,6 +763,32 @@ body {
    TABLES & TOOLBARS
    ========================================================= */
 
+/* Filter Bars */
+.filters {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.filters select.input {
+  width: auto;
+  min-width: 170px;
+  flex: 0 0 auto;
+  padding: 9px 14px;
+  font-size: 13.5px;
+}
+
+.filters input.input {
+  flex: 1 1 240px;
+  width: auto;
+  min-width: 220px;
+  padding: 9px 14px;
+  font-size: 13.5px;
+}
+
 .table-card {
   overflow-x: auto;
   border-radius: 16px;
@@ -751,11 +810,33 @@ body {
   color: var(--text-heading);
 }
 
+.table-head > .input {
+  width: 300px;
+  max-width: 100%;
+  padding: 9px 14px;
+  font-size: 13.5px;
+}
+
 .table-tools {
   display: flex;
+  flex-direction: row;
   gap: 10px;
   align-items: center;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
+}
+
+.table-tools select.input {
+  width: auto;
+  min-width: 150px;
+  padding: 9px 14px;
+  font-size: 13.5px;
+}
+
+.table-tools input.input {
+  width: 260px;
+  max-width: 100%;
+  padding: 9px 14px;
+  font-size: 13.5px;
 }
 
 .input-mini {
@@ -824,15 +905,39 @@ body {
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  padding: 4px 10px;
-  border-radius: 20px;
+  padding: 5px 13px;
+  border-radius: 999px;
   font-size: 12px;
   font-weight: 600;
+  line-height: 1.35;
+  white-space: nowrap;
+  border: 1px solid transparent;
 }
 
-.status.pending { background: var(--warning-subtle); color: var(--warning); }
-.status.done { background: var(--success-subtle); color: var(--success); }
-.status.urgent { background: var(--danger-subtle); color: var(--danger); }
+.status.pending { background: var(--warning-subtle); color: var(--warning); border-color: rgba(245, 158, 11, 0.25); }
+.status.done { background: var(--success-subtle); color: var(--success); border-color: rgba(34, 197, 94, 0.25); }
+.status.urgent { background: var(--danger-subtle); color: var(--danger); border-color: rgba(239, 68, 68, 0.25); }
+
+/* Guard if .status is ever placed directly on a table cell */
+td.status {
+  display: table-cell;
+  padding: 14px 16px;
+  border-radius: 0;
+  background: transparent !important;
+  border-left: none;
+  border-right: none;
+  border-top: none;
+  border-bottom: 1px solid var(--table-border);
+  font-size: 13px;
+}
+
+.table-card td .input.input-mini,
+.table-card td .input-mini {
+  width: auto;
+  min-width: 112px;
+  padding: 6px 10px;
+  font-size: 12.5px;
+}
 
 .btn-mini {
   padding: 6px 12px;
@@ -843,6 +948,7 @@ body {
   cursor: pointer;
   font-weight: 600;
   font-size: 12px;
+  white-space: nowrap;
   transition: all 0.15s ease;
 }
 
@@ -886,6 +992,15 @@ body {
   .grid-form .span-2, .grid-form .actions { grid-column: span 1; }
   .topbar-actions { flex-wrap: wrap; }
   .cards { grid-template-columns: 1fr 1fr; }
+  .table-tools { flex-wrap: wrap; width: 100%; }
+  .table-tools select.input,
+  .table-tools input.input,
+  .table-head > .input,
+  .filters select.input,
+  .filters input.input {
+    width: 100%;
+    flex: 1 1 100%;
+  }
 }
 
 /* Print Styles */

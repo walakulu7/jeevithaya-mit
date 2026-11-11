@@ -141,7 +141,7 @@ async function displayRecentRequests() {
           <td><span class="badge">${bloodGroup}</span></td>
           <td>${type}</td>
           <td>${quantity} ${quantity === 1 ? "Unit" : "Units"}</td>
-          <td class="status ${statusClass}">${status}</td>
+          <td><span class="status ${statusClass}">${status}</span></td>
         </tr>
       `;
     }).join("");

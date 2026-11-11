@@ -87,7 +87,7 @@ function render(rows) {
       <td>${item.donorId}</td>
       <td>${item.date}</td>
       <td>${item.verifiedBy}</td>
-      <td class="status ${cls}">${item.result}</td>
+      <td><span class="status ${cls}">${item.result}</span></td>
       <td>${item.comment || "-"}</td>
       <td><button class="btn-mini danger" data-id="${item.verificationId}" data-del="${realIdx}">Delete</button></td>
     `;

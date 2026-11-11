@@ -97,10 +97,10 @@ function render(list) {
       <td><span class="badge">${r.bloodGroup}</span></td>
       <td>${r.type}</td>
       <td>${r.qty}</td>
-      <td class="status ${urgencyClass(r.urgency)}">${r.urgency}</td>
-      <td class="status ${statusClass(r.status)}">${r.status}</td>
+      <td><span class="status ${urgencyClass(r.urgency)}">${r.urgency}</span></td>
+      <td><span class="status ${statusClass(r.status)}">${r.status}</span></td>
       <td>
-        <select class="input input-mini" data-id="${r.requestId}" data-idx="${idx}">
+        <select class="input-mini" data-id="${r.requestId}" data-idx="${idx}">
           <option ${r.status === "Pending" ? "selected" : ""}>Pending</option>
           <option ${r.status === "Approved" ? "selected" : ""}>Approved</option>
           <option ${r.status === "Fulfilled" ? "selected" : ""}>Fulfilled</option>
