@@ -21,13 +21,19 @@ function saveUsers(list){
 
 function populateProfileFields(profile){
   if (!profile) return;
-  if (nameEl) nameEl.value = profile.name || profile.Name || "";
-  if (emailEl) emailEl.value = profile.email || profile.Email || "";
+  const nameVal = profile.name || profile.Name || "";
+  const emailVal = profile.email || profile.Email || "";
+  if (nameEl) nameEl.value = nameVal;
+  if (emailEl) emailEl.value = emailVal;
   if (roleEl) roleEl.value = profile.role || profile.Role || "";
 
   const userEmailEl = document.getElementById("userEmail");
-  if (userEmailEl && (profile.email || profile.Email)) {
-    userEmailEl.textContent = profile.email || profile.Email;
+  if (userEmailEl && (nameVal || emailVal)) {
+    userEmailEl.textContent = nameVal || emailVal;
+  }
+  const dropdownNameEl = document.getElementById("dropdownUserName");
+  if (dropdownNameEl && nameVal) {
+    dropdownNameEl.textContent = nameVal;
   }
 }
 
@@ -97,6 +103,7 @@ form.addEventListener("submit", async (e) => {
 
   // update session also
   session.name = newName;
+  populateProfileFields(session);
   try {
     localStorage.setItem("jv_session", JSON.stringify(session));
   } catch {}

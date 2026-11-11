@@ -21,7 +21,11 @@ function updateHeaderAndProfile(user) {
   const userId = user.userId || user.UserID || "U001";
   const formattedRole = roleMap[rawRole] || rawRole || "System Admin";
 
-  if (userEmailEl) userEmailEl.textContent = email;
+  if (userEmailEl) userEmailEl.textContent = name;
+  const dropdownNameEl = document.getElementById("dropdownUserName");
+  const dropdownMetaEl = document.getElementById("dropdownUserMeta");
+  if (dropdownNameEl) dropdownNameEl.textContent = name;
+  if (dropdownMetaEl) dropdownMetaEl.textContent = email ? `${formattedRole} • ${email}` : formattedRole;
   if (roleInfoEl) roleInfoEl.textContent = `Role: ${formattedRole}`;
   if (welcomeEl) welcomeEl.textContent = `Welcome, ${name}`;
 

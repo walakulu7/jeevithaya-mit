@@ -5,15 +5,15 @@
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Jeevithaya | Reports</title>
-  <link rel="icon" type="image/svg+xml" href="{% static 'img/logo.svg' %}?v=4.9" />
-  <link rel="stylesheet" href="{% static 'css/style.css' %}?v=4.9" />
+  <link rel="icon" type="image/svg+xml" href="{% static 'img/logo.svg' %}?v=5.4" />
+  <link rel="stylesheet" href="{% static 'css/style.css' %}?v=5.4" />
 </head>
 <body>
   <div class="layout">
     <!-- Sidebar -->
     <aside class="sidebar">
       <div class="brand">
-        <div class="logo"><img src="{% static 'img/logo.svg' %}?v=4.9" alt="Jeevithaya Logo" /></div>
+        <div class="logo"><img src="{% static 'img/logo.svg' %}?v=5.4" alt="Jeevithaya Logo" /></div>
         <div>
           <h1>Jeevithaya</h1>
           <p class="muted">Centralized Blood & Plasma</p>
@@ -81,26 +81,10 @@
       <header class="topbar">
         <div class="topbar-title-area">
           <h2>Reports & Analytics</h2>
-          <p class="muted">Real-time system metrics & audit logs</p>
+          <p class="muted">Multi-report operational insights, stock risk & compliance audit logs</p>
         </div>
 
         <div class="topbar-actions">
-          <select id="range" class="input-mini" style="width: auto;">
-            <option value="all">All Time</option>
-            <option value="7">Last 7 Days</option>
-            <option value="30">Last 30 Days</option>
-          </select>
-
-          <button id="exportBtn" class="btn btn-primary" type="button" style="padding: 0 14px; height: 38px;">
-            Export JSON
-          </button>
-          <button id="exportCsvBtn" class="btn btn-ghost" type="button" style="padding: 0 14px; height: 38px;">
-            Export CSV
-          </button>
-          <button id="printBtn" class="btn btn-ghost" type="button" style="padding: 0 14px; height: 38px;">
-            Print
-          </button>
-
           <!-- Live Date & Time Clock -->
           <div class="clock-widget" title="Live System Time">
             <svg class="clock-icon" viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
@@ -142,156 +126,557 @@
         </div>
       </header>
 
-      <!-- Summary KPI Cards -->
-      <section class="cards">
-        <div class="stat-card">
-          <div class="stat-header">
-            <span class="stat-label">Total Donors</span>
-            <span class="stat-icon-badge red">
-              <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-            </span>
+      <!-- Printable Branded Letterhead (Print/PDF Only) -->
+      <div class="print-letterhead" id="printLetterhead">
+        <div class="print-brand">
+          <img src="{% static 'img/logo.svg' %}?v=5.4" alt="Jeevithaya" />
+          <div>
+            <h2 style="margin:0; font-size:18px;">Jeevithaya Blood &amp; Plasma Bank</h2>
+            <div id="printReportTitle" style="font-size:13px; color:#d90429; font-weight:700;">Executive Overview Report</div>
           </div>
-          <p class="count" id="rDonors">0</p>
-          <span class="stat-sub">Registered volunteer donors</span>
         </div>
-
-        <div class="stat-card">
-          <div class="stat-header">
-            <span class="stat-label">Total Patients</span>
-            <span class="stat-icon-badge amber">
-              <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>
-            </span>
-          </div>
-          <p class="count" id="rPatients">0</p>
-          <span class="stat-sub">Enrolled hospital patients</span>
+        <div class="print-meta">
+          <div id="printFilterSummary">Period: All Time</div>
+          <div id="printGeneratedAt">Generated: --</div>
+          <div id="printPreparedBy">Prepared by: --</div>
         </div>
-
-        <div class="stat-card">
-          <div class="stat-header">
-            <span class="stat-label">Total Requests</span>
-            <span class="stat-icon-badge green">
-              <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
-            </span>
-          </div>
-          <p class="count" id="rRequests">0</p>
-          <span class="stat-sub">Lifetime requisitions logged</span>
-        </div>
-
-        <div class="stat-card">
-          <div class="stat-header">
-            <span class="stat-label">Pending Requests</span>
-            <span class="stat-icon-badge crimson">
-              <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-            </span>
-          </div>
-          <p class="count danger" id="rPending">0</p>
-          <span class="stat-sub">Awaiting hospital fulfillment</span>
-        </div>
-      </section>
-
-      <section class="cards">
-        <div class="stat-card">
-          <div class="stat-header">
-            <span class="stat-label">Inventory Units</span>
-            <span class="stat-icon-badge green">
-              <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
-            </span>
-          </div>
-          <p class="count" id="rUnits">0</p>
-          <span class="stat-sub">Available active stock</span>
-        </div>
-
-        <div class="stat-card">
-          <div class="stat-header">
-            <span class="stat-label">Expired Units</span>
-            <span class="stat-icon-badge crimson">
-              <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-            </span>
-          </div>
-          <p class="count danger" id="rExpired">0</p>
-          <span class="stat-sub">Requires lab disposal</span>
-        </div>
-
-        <div class="stat-card">
-          <div class="stat-header">
-            <span class="stat-label">Verifications</span>
-            <span class="stat-icon-badge amber">
-              <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>
-            </span>
-          </div>
-          <p class="count" id="rVerifications">0</p>
-          <span class="stat-sub">Lab testing clearances</span>
-        </div>
-
-        <div class="stat-card">
-          <div class="stat-header">
-            <span class="stat-label">Disposals</span>
-            <span class="stat-icon-badge red">
-              <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
-            </span>
-          </div>
-          <p class="count" id="rDisposals">0</p>
-          <span class="stat-sub">Incinerated / safe disposal</span>
-        </div>
-      </section>
-
-      <!-- Tables -->
-      <div class="reports-grid">
-        <section class="card table-card">
-          <div class="table-head">
-            <h3>Requests by Status</h3>
-          </div>
-          <table>
-            <thead>
-              <tr>
-                <th>Status</th>
-                <th>Count</th>
-              </tr>
-            </thead>
-            <tbody id="statusTable"></tbody>
-          </table>
-        </section>
-
-        <section class="card table-card">
-          <div class="table-head">
-            <h3>Inventory by Blood Group</h3>
-          </div>
-          <table>
-            <thead>
-              <tr>
-                <th>Blood Group</th>
-                <th>Units</th>
-              </tr>
-            </thead>
-            <tbody id="bloodTable"></tbody>
-          </table>
-        </section>
       </div>
 
-      <section class="card table-card">
-        <div class="table-head">
-          <h3>Recent Activity</h3>
-          <p class="muted">Latest Requests / Donations / Verifications</p>
+      <!-- Report Export Actions Row -->
+      <div class="report-export-bar">
+        <span class="muted" style="font-size: 13px; font-weight: 600;">Export &amp; Official Documents:</span>
+        <div class="report-export-actions">
+          <a id="pdfReportBtn" class="btn btn-primary" href="/api/reports/pdf/?type=overview" target="_blank" rel="noopener">
+            PDF Report
+          </a>
+          <a id="pdfPackBtn" class="btn btn-ghost" href="/api/reports/pdf/?type=all&download=1" download>
+            Full Pack (PDF)
+          </a>
+          <button id="exportCsvBtn" class="btn btn-ghost" type="button">
+            Export CSV
+          </button>
+          <button id="exportBtn" class="btn btn-ghost" type="button">
+            Export JSON
+          </button>
         </div>
-        <table>
-          <thead>
-            <tr>
-              <th>Type</th>
-              <th>ID</th>
-              <th>Date</th>
-              <th>Details</th>
-            </tr>
-          </thead>
-          <tbody id="activityTable"></tbody>
-        </table>
+      </div>
+
+      <!-- Global Report Filter Toolbar -->
+      <section class="card report-filters">
+        <div class="filter-field">
+          <label class="filter-label" for="range">Date Period</label>
+          <select id="range" class="input">
+            <option value="all">All Time</option>
+            <option value="7">Last 7 Days</option>
+            <option value="30">Last 30 Days</option>
+            <option value="90">Last 90 Days</option>
+            <option value="custom">Custom Range</option>
+          </select>
+        </div>
+
+        <div class="filter-field" id="fromField" style="display:none;">
+          <label class="filter-label" for="fromDate">From Date</label>
+          <input id="fromDate" type="date" class="input" />
+        </div>
+
+        <div class="filter-field" id="toField" style="display:none;">
+          <label class="filter-label" for="toDate">To Date</label>
+          <input id="toDate" type="date" class="input" />
+        </div>
+
+        <div class="filter-field">
+          <label class="filter-label" for="filterBloodGroup">Blood Group</label>
+          <select id="filterBloodGroup" class="input">
+            <option value="all">All Blood Groups</option>
+            <option value="O+">O+</option>
+            <option value="O-">O-</option>
+            <option value="A+">A+</option>
+            <option value="A-">A-</option>
+            <option value="B+">B+</option>
+            <option value="B-">B-</option>
+            <option value="AB+">AB+</option>
+            <option value="AB-">AB-</option>
+          </select>
+        </div>
+
+        <div class="filter-field">
+          <label class="filter-label" for="filterType">Component Type</label>
+          <select id="filterType" class="input">
+            <option value="all">All Types</option>
+            <option value="Blood">Blood</option>
+            <option value="Plasma">Plasma</option>
+          </select>
+        </div>
+
+        <div class="filter-field search-field">
+          <label class="filter-label" for="reportSearch">Search Ledger Rows</label>
+          <input id="reportSearch" type="text" class="input" placeholder="Search ID, Donor, Patient, Batch, Officer..." />
+        </div>
+
+        <button id="resetFiltersBtn" class="btn btn-ghost" type="button" style="height:38px; padding:0 14px;">
+          Reset
+        </button>
+      </section>
+
+      <!-- Multi-Report Tabs -->
+      <nav class="report-tabs" id="reportTabs" aria-label="Report Categories">
+        <button type="button" class="report-tab active" data-tab="overview">Executive Overview</button>
+        <button type="button" class="report-tab" data-tab="inventory">Inventory &amp; Expiry</button>
+        <button type="button" class="report-tab" data-tab="requests">Requests &amp; Fulfillment</button>
+        <button type="button" class="report-tab" data-tab="donations">Donors &amp; Intake</button>
+        <button type="button" class="report-tab" data-tab="verification">Lab Verification</button>
+        <button type="button" class="report-tab" data-tab="disposal">Disposal &amp; Wastage</button>
+      </nav>
+
+      <!-- =========================================================
+           TAB 1: EXECUTIVE OVERVIEW REPORT
+           ========================================================= -->
+      <section class="report-panel active" id="panel-overview">
+        <div id="shortageAlertBanner"></div>
+
+        <section class="cards">
+          <div class="stat-card">
+            <div class="stat-header">
+              <span class="stat-label">Request Fulfillment</span>
+              <span class="stat-icon-badge green">%</span>
+            </div>
+            <p class="count" id="ovFulfillmentRate">0%</p>
+            <span class="stat-sub" id="ovRequestsMeta">0 of 0 requests fulfilled</span>
+          </div>
+          <div class="stat-card">
+            <div class="stat-header">
+              <span class="stat-label">Available Safe Stock</span>
+              <span class="stat-icon-badge green">U</span>
+            </div>
+            <p class="count" id="ovAvailableUnits">0</p>
+            <span class="stat-sub" id="ovExpiryMeta">0 expiring in 7 days</span>
+          </div>
+          <div class="stat-card">
+            <div class="stat-header">
+              <span class="stat-label">QC Screening Yield</span>
+              <span class="stat-icon-badge amber">%</span>
+            </div>
+            <p class="count" id="ovPassRate">0%</p>
+            <span class="stat-sub" id="ovVerifMeta">0 verifications audited</span>
+          </div>
+          <div class="stat-card">
+            <div class="stat-header">
+              <span class="stat-label">Wastage Rate</span>
+              <span class="stat-icon-badge crimson">%</span>
+            </div>
+            <p class="count danger" id="ovWastageRate">0%</p>
+            <span class="stat-sub" id="ovDisposalMeta">0 disposal records</span>
+          </div>
+        </section>
+
+        <div class="reports-grid">
+          <section class="card table-card">
+            <div class="table-head">
+              <h3>Supply vs. Pending Demand by Blood Group</h3>
+            </div>
+            <div id="ovSupplyChart" class="chart-list"></div>
+          </section>
+
+          <section class="card table-card">
+            <div class="table-head">
+              <h3>System Snapshot</h3>
+            </div>
+            <table>
+              <thead>
+                <tr><th>Metric</th><th>Value</th></tr>
+              </thead>
+              <tbody id="ovSnapshotTable"></tbody>
+            </table>
+          </section>
+        </div>
+
+        <section class="card table-card">
+          <div class="table-head">
+            <h3>Cross-Module Audit Timeline</h3>
+            <p class="muted">Latest Requests, Donations, Verifications &amp; Disposals matching current filters</p>
+          </div>
+          <table>
+            <thead>
+              <tr>
+                <th>Module</th>
+                <th>Record ID</th>
+                <th>Date</th>
+                <th>Blood Group</th>
+                <th>Summary</th>
+              </tr>
+            </thead>
+            <tbody id="ovTimelineTable"></tbody>
+          </table>
+        </section>
+      </section>
+
+      <!-- =========================================================
+           TAB 2: INVENTORY & COLD-CHAIN EXPIRY REPORT
+           ========================================================= -->
+      <section class="report-panel" id="panel-inventory">
+        <section class="cards">
+          <div class="stat-card">
+            <div class="stat-header"><span class="stat-label">Available Units</span></div>
+            <p class="count" id="invAvail">0</p>
+            <span class="stat-sub">Ready for hospital issue</span>
+          </div>
+          <div class="stat-card">
+            <div class="stat-header"><span class="stat-label">Reserved Units</span></div>
+            <p class="count" id="invReserved">0</p>
+            <span class="stat-sub">Allocated to pending orders</span>
+          </div>
+          <div class="stat-card">
+            <div class="stat-header"><span class="stat-label">Expiring (&le; 7 Days)</span></div>
+            <p class="count danger" id="invExpiring7">0</p>
+            <span class="stat-sub">Immediate FIFO dispatch priority</span>
+          </div>
+          <div class="stat-card">
+            <div class="stat-header"><span class="stat-label">Expired Units</span></div>
+            <p class="count danger" id="invExpired">0</p>
+            <span class="stat-sub">Quarantine / bio-waste disposal</span>
+          </div>
+        </section>
+
+        <div class="reports-grid">
+          <section class="card table-card">
+            <div class="table-head"><h3>Blood Group &times; Component Matrix</h3></div>
+            <table>
+              <thead>
+                <tr>
+                  <th>Blood Group</th>
+                  <th>Blood</th>
+                  <th>Plasma</th>
+                  <th>Available Total</th>
+                  <th>Reserved</th>
+                  <th>Expired</th>
+                </tr>
+              </thead>
+              <tbody id="invMatrixTable"></tbody>
+            </table>
+          </section>
+
+          <section class="card table-card">
+            <div class="table-head"><h3>Cold-Chain Expiry Aging</h3></div>
+            <div id="invExpiryChart" class="chart-list"></div>
+            <table style="margin-top:12px;">
+              <thead><tr><th>Inventory Status</th><th>Records</th><th>Units</th></tr></thead>
+              <tbody id="invStatusTable"></tbody>
+            </table>
+          </section>
+        </div>
+
+        <section class="card table-card">
+          <div class="table-head">
+            <h3>Batch-Level Inventory Ledger</h3>
+            <span class="muted" id="invLedgerCount">0 units</span>
+          </div>
+          <table>
+            <thead>
+              <tr>
+                <th>Unit ID</th>
+                <th>Batch No</th>
+                <th>Blood</th>
+                <th>Type</th>
+                <th>Qty</th>
+                <th>Expiry Date</th>
+                <th>Shelf-Life Bucket</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="invLedgerTable"></tbody>
+          </table>
+        </section>
+      </section>
+
+      <!-- =========================================================
+           TAB 3: HOSPITAL REQUESTS & FULFILLMENT REPORT
+           ========================================================= -->
+      <section class="report-panel" id="panel-requests">
+        <section class="cards">
+          <div class="stat-card">
+            <div class="stat-header"><span class="stat-label">Total Requests</span></div>
+            <p class="count" id="reqTotal">0</p>
+            <span class="stat-sub" id="reqUnitsMeta">0 units requested</span>
+          </div>
+          <div class="stat-card">
+            <div class="stat-header"><span class="stat-label">Open Queue</span></div>
+            <p class="count" id="reqOpen">0</p>
+            <span class="stat-sub">Pending + Approved</span>
+          </div>
+          <div class="stat-card">
+            <div class="stat-header"><span class="stat-label">Fulfilled</span></div>
+            <p class="count" id="reqFulfilled">0</p>
+            <span class="stat-sub" id="reqRateMeta">0% fulfillment rate</span>
+          </div>
+          <div class="stat-card">
+            <div class="stat-header"><span class="stat-label">Critical Cases</span></div>
+            <p class="count danger" id="reqCritical">0</p>
+            <span class="stat-sub">High-priority requisitions</span>
+          </div>
+        </section>
+
+        <div class="reports-grid">
+          <section class="card table-card">
+            <div class="table-head"><h3>Requests by Status &amp; Urgency</h3></div>
+            <div id="reqStatusChart" class="chart-list"></div>
+            <table style="margin-top:12px;">
+              <thead><tr><th>Urgency</th><th>Total</th><th>Open</th><th>Units</th></tr></thead>
+              <tbody id="reqUrgencyTable"></tbody>
+            </table>
+          </section>
+
+          <section class="card table-card">
+            <div class="table-head"><h3>Demand by Hospital ID</h3></div>
+            <table>
+              <thead>
+                <tr>
+                  <th>Hospital</th>
+                  <th>Requests</th>
+                  <th>Fulfilled</th>
+                  <th>Open</th>
+                  <th>Units</th>
+                </tr>
+              </thead>
+              <tbody id="reqHospitalTable"></tbody>
+            </table>
+          </section>
+        </div>
+
+        <section class="card table-card">
+          <div class="table-head">
+            <h3>Requisition Fulfillment Ledger</h3>
+            <span class="muted" id="reqLedgerCount">0 requests</span>
+          </div>
+          <table>
+            <thead>
+              <tr>
+                <th>Request ID</th>
+                <th>Patient</th>
+                <th>Hospital</th>
+                <th>Date</th>
+                <th>Blood / Type</th>
+                <th>Qty</th>
+                <th>Urgency</th>
+                <th>Status</th>
+                <th>Stock Coverage</th>
+              </tr>
+            </thead>
+            <tbody id="reqLedgerTable"></tbody>
+          </table>
+        </section>
+      </section>
+
+      <!-- =========================================================
+           TAB 4: DONORS & COLLECTION INTAKE REPORT
+           ========================================================= -->
+      <section class="report-panel" id="panel-donations">
+        <section class="cards">
+          <div class="stat-card">
+            <div class="stat-header"><span class="stat-label">Registered Donors</span></div>
+            <p class="count" id="donTotalDonors">0</p>
+            <span class="stat-sub" id="donEligMeta">0% eligible</span>
+          </div>
+          <div class="stat-card">
+            <div class="stat-header"><span class="stat-label">Donations Logged</span></div>
+            <p class="count" id="donTotalDonations">0</p>
+            <span class="stat-sub" id="donUnitsMeta">0 units collected</span>
+          </div>
+          <div class="stat-card">
+            <div class="stat-header"><span class="stat-label">Whole Blood Collected</span></div>
+            <p class="count" id="donBloodUnits">0</p>
+            <span class="stat-sub">Units in selected range</span>
+          </div>
+          <div class="stat-card">
+            <div class="stat-header"><span class="stat-label">Plasma Collected</span></div>
+            <p class="count" id="donPlasmaUnits">0</p>
+            <span class="stat-sub">Units in selected range</span>
+          </div>
+        </section>
+
+        <div class="reports-grid">
+          <section class="card table-card">
+            <div class="table-head"><h3>Donor Eligibility by Blood Group</h3></div>
+            <table>
+              <thead>
+                <tr><th>Blood Group</th><th>Eligible</th><th>Not Eligible</th><th>Total</th></tr>
+              </thead>
+              <tbody id="donBgTable"></tbody>
+            </table>
+          </section>
+
+          <section class="card table-card">
+            <div class="table-head"><h3>Top &amp; Repeat Donors</h3></div>
+            <table>
+              <thead>
+                <tr><th>Donor</th><th>Blood</th><th>Sessions</th><th>Units</th><th>Last Date</th></tr>
+              </thead>
+              <tbody id="donTopTable"></tbody>
+            </table>
+          </section>
+        </div>
+
+        <section class="card table-card">
+          <div class="table-head">
+            <h3>Donation Intake Ledger</h3>
+            <span class="muted" id="donLedgerCount">0 donations</span>
+          </div>
+          <table>
+            <thead>
+              <tr>
+                <th>Donation ID</th>
+                <th>Donor</th>
+                <th>Date</th>
+                <th>Blood</th>
+                <th>Type</th>
+                <th>Qty</th>
+                <th>Blood Bank</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="donLedgerTable"></tbody>
+          </table>
+        </section>
+      </section>
+
+      <!-- =========================================================
+           TAB 5: SEROLOGICAL VERIFICATION & QC REPORT
+           ========================================================= -->
+      <section class="report-panel" id="panel-verification">
+        <section class="cards">
+          <div class="stat-card">
+            <div class="stat-header"><span class="stat-label">Total Screened</span></div>
+            <p class="count" id="verTotal">0</p>
+            <span class="stat-sub">Quality control tests</span>
+          </div>
+          <div class="stat-card">
+            <div class="stat-header"><span class="stat-label">Cleared (Passed)</span></div>
+            <p class="count" id="verPassed">0</p>
+            <span class="stat-sub">Safe for cold-chain storage</span>
+          </div>
+          <div class="stat-card">
+            <div class="stat-header"><span class="stat-label">Rejected (Failed)</span></div>
+            <p class="count danger" id="verFailed">0</p>
+            <span class="stat-sub">Flagged for bio-waste disposal</span>
+          </div>
+          <div class="stat-card">
+            <div class="stat-header"><span class="stat-label">Clearance Rate</span></div>
+            <p class="count" id="verPassRate">0%</p>
+            <span class="stat-sub">Overall screening safety yield</span>
+          </div>
+        </section>
+
+        <div class="reports-grid">
+          <section class="card table-card">
+            <div class="table-head"><h3>Serological Marker Breakdown</h3></div>
+            <table>
+              <thead><tr><th>Marker</th><th>Passed</th><th>Failed</th></tr></thead>
+              <tbody id="verMarkerTable"></tbody>
+            </table>
+          </section>
+
+          <section class="card table-card">
+            <div class="table-head"><h3>Lab Officer Throughput</h3></div>
+            <table>
+              <thead><tr><th>Verified By</th><th>Total</th><th>Passed</th><th>Failed</th></tr></thead>
+              <tbody id="verOfficerTable"></tbody>
+            </table>
+          </section>
+        </div>
+
+        <section class="card table-card">
+          <div class="table-head">
+            <h3>Verification Audit Ledger</h3>
+            <span class="muted" id="verLedgerCount">0 records</span>
+          </div>
+          <table>
+            <thead>
+              <tr>
+                <th>Verification ID</th>
+                <th>Unit</th>
+                <th>Donor</th>
+                <th>Date</th>
+                <th>Verified By</th>
+                <th>HIV / HBV / HCV / Syphilis</th>
+                <th>Result</th>
+                <th>Notes</th>
+              </tr>
+            </thead>
+            <tbody id="verLedgerTable"></tbody>
+          </table>
+        </section>
+      </section>
+
+      <!-- =========================================================
+           TAB 6: DISPOSAL & WASTAGE COMPLIANCE REPORT
+           ========================================================= -->
+      <section class="report-panel" id="panel-disposal">
+        <section class="cards">
+          <div class="stat-card">
+            <div class="stat-header"><span class="stat-label">Disposal Events</span></div>
+            <p class="count" id="dispTotal">0</p>
+            <span class="stat-sub" id="dispUnitsMeta">0 units disposed</span>
+          </div>
+          <div class="stat-card">
+            <div class="stat-header"><span class="stat-label">Expired Wastage</span></div>
+            <p class="count danger" id="dispExpired">0</p>
+            <span class="stat-sub">Shelf-life elapsed</span>
+          </div>
+          <div class="stat-card">
+            <div class="stat-header"><span class="stat-label">Failed Verification</span></div>
+            <p class="count danger" id="dispFailedVer">0</p>
+            <span class="stat-sub">Reactive screening discards</span>
+          </div>
+          <div class="stat-card">
+            <div class="stat-header"><span class="stat-label">Contaminated / Damaged</span></div>
+            <p class="count" id="dispOther">0</p>
+            <span class="stat-sub">Handling / cold-chain incidents</span>
+          </div>
+        </section>
+
+        <div class="reports-grid">
+          <section class="card table-card">
+            <div class="table-head"><h3>Wastage by Disposal Reason</h3></div>
+            <div id="dispReasonChart" class="chart-list"></div>
+          </section>
+
+          <section class="card table-card">
+            <div class="table-head"><h3>Wastage by Blood Group &amp; Officer</h3></div>
+            <table>
+              <thead><tr><th>Blood Group</th><th>Events</th><th>Units</th></tr></thead>
+              <tbody id="dispBgTable"></tbody>
+            </table>
+          </section>
+        </div>
+
+        <section class="card table-card">
+          <div class="table-head">
+            <h3>Bio-Waste Compliance Audit Ledger</h3>
+            <span class="muted" id="dispLedgerCount">0 records</span>
+          </div>
+          <table>
+            <thead>
+              <tr>
+                <th>Disposal ID</th>
+                <th>Unit ID</th>
+                <th>Blood / Type</th>
+                <th>Qty</th>
+                <th>Date</th>
+                <th>Reason</th>
+                <th>Disposed By</th>
+                <th>Notes</th>
+              </tr>
+            </thead>
+            <tbody id="dispLedgerTable"></tbody>
+          </table>
+        </section>
       </section>
 
     </main>
   </div>
 
-  <script src="{% static 'js/rbac.js' %}?v=4.9"></script>
-  <script src="{% static 'js/api.js' %}?v=4.9"></script>
-  <script src="{% static 'js/reports.js' %}?v=4.9"></script>
+  <script src="{% static 'js/rbac.js' %}?v=5.4"></script>
+  <script src="{% static 'js/api.js' %}?v=5.4"></script>
+  <script src="{% static 'js/reports.js' %}?v=5.4"></script>
 
 </body>
 </html>

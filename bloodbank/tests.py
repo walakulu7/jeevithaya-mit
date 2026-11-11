@@ -1,11 +1,12 @@
 from django.test import TestCase, Client
 from datetime import date, timedelta
 from bloodbank.models import (
-    User, Donor, Patient, BloodRequest, Inventory, Verification, Disposal
+    User, Donor, Patient, BloodRequest, Donation, Inventory, Verification, Disposal
 )
 from bloodbank.services import (
     InventoryService, RequestFulfillmentService,
-    InventoryReportStrategy, DonationReportStrategy, RequestReportStrategy, AnalyticsContext
+    ExecutiveOverviewStrategy, InventoryReportStrategy, DonationReportStrategy,
+    RequestReportStrategy, VerificationReportStrategy, DisposalReportStrategy, AnalyticsContext
 )
 
 
@@ -243,3 +244,57 @@ class RESTAPITests(TestCase):
         del_res = self.client.delete(f"/api/users/{user_id}/")
         self.assertEqual(del_res.status_code, 204)
         self.assertFalse(User.objects.filter(UserID=user_id).exists())
+
+    def test_professional_reports_api_and_strategies(self):
+        """Validates all 6 detailed reports, expiry buckets, filters, and /api/reports/."""
+        Donor.objects.create(DonorID="D_R1", Name="Alice", BloodGroup="O+", Phone="0771112222", Status="Eligible")
+        Donor.objects.create(DonorID="D_R2", Name="Bob", BloodGroup="A-", Phone="0773334444", Status="Not Eligible")
+        Patient.objects.create(PatientID="P_R1", HospitalID=1, Name="Charlie", BloodGroup="O+", Type="Blood", Urgency="Critical", Contact="0711112222")
+
+        Donation.objects.create(DonationID="DN_R1", DonorID="D_R1", Date=date.today(), BloodGroup="O+", Type="Blood", Quantity=2, BloodBankID=1, Status="Completed")
+        Inventory.objects.create(UnitID="U_R1", DonationID="DN_R1", DonorID="D_R1", BloodBankID=1, BloodGroup="O+", Type="Blood", Quantity=2, BatchNo="B-1", ExpiryDate=date.today() + timedelta(days=5), Status="Available")
+        Inventory.objects.create(UnitID="U_R2", DonationID="DN_R1", DonorID="D_R1", BloodBankID=1, BloodGroup="A-", Type="Plasma", Quantity=1, BatchNo="B-2", ExpiryDate=date.today() + timedelta(days=45), Status="Available")
+        Inventory.objects.create(UnitID="U_R3", DonationID="DN_R1", DonorID="D_R1", BloodBankID=1, BloodGroup="O+", Type="Blood", Quantity=1, BatchNo="B-3", ExpiryDate=date.today() - timedelta(days=1), Status="Expired")
+
+        BloodRequest.objects.create(RequestID="REQ_R1", PatientID="P_R1", HospitalID=1, RequestDate=date.today(), BloodGroup="O+", Type="Blood", Quantity=3, Urgency="Critical", Status="Pending")
+        Verification.objects.create(VerificationID="VER_R1", UnitID="U_R1", DonorID="D_R1", VerifiedBy="Senior Lab Officer", Date=date.today(), HIV="Passed", HepatitisB="Passed", HepatitisC="Passed", Syphilis="Passed", OverallResult="Passed")
+        Verification.objects.create(VerificationID="VER_R2", UnitID="U_R3", DonorID="D_R1", VerifiedBy="Lab Assistant", Date=date.today(), HIV="Passed", HepatitisB="Failed", HepatitisC="Passed", Syphilis="Passed", OverallResult="Failed", Notes="Reactive HBV")
+        Disposal.objects.create(DisposalID="DISP_R1", UnitID="U_R3", DisposalDate=date.today(), Reason="Expired", DisposedBy="Senior Lab Officer", Notes="Auto expired")
+
+        res = self.client.get("/api/reports/?type=all")
+        self.assertEqual(res.status_code, 200)
+        payload = res.json()["reports"]
+
+        self.assertEqual(set(payload.keys()), {"overview", "inventory", "requests", "donations", "verification", "disposal"})
+        self.assertEqual(payload["inventory"]["summary"]["expiringSoonUnits"], 2)
+        self.assertEqual(payload["inventory"]["summary"]["expiredUnits"], 1)
+        self.assertEqual(payload["requests"]["summary"]["criticalRequests"], 1)
+        self.assertEqual(payload["donations"]["summary"]["eligibleDonors"], 1)
+        self.assertEqual(payload["verification"]["summary"]["failedCount"], 1)
+        self.assertEqual(payload["disposal"]["summary"]["expiredReasonCount"], 1)
+        self.assertTrue(any(s["bloodGroup"] == "O+" and s["shortage"] for s in payload["overview"]["criticalShortages"]))
+
+        # Filtered single report check (BloodGroup=A-, Type=Plasma)
+        filtered_res = self.client.get("/api/reports/?type=inventory&blood_group=A-&item_type=Plasma")
+        self.assertEqual(filtered_res.status_code, 200)
+        inv_filtered = filtered_res.json()["report"]
+        self.assertEqual(len(inv_filtered["ledger"]), 1)
+        self.assertEqual(inv_filtered["ledger"][0]["unitId"], "U_R2")
+
+        # Invalid report type returns 400
+        self.assertEqual(self.client.get("/api/reports/?type=unknown").status_code, 400)
+
+        # Page template renders
+        self.assertEqual(self.client.get("/reports.html").status_code, 200)
+
+        # Formal PDF report endpoints
+        for rtype in ("overview", "inventory", "requests", "donations", "verification", "disposal", "all"):
+            pdf_res = self.client.get(f"/api/reports/pdf/?type={rtype}")
+            self.assertEqual(pdf_res.status_code, 200)
+            self.assertEqual(pdf_res["Content-Type"], "application/pdf")
+            self.assertTrue(pdf_res.content.startswith(b"%PDF-"))
+
+        dl_res = self.client.get("/api/reports/pdf/?type=all&download=1")
+        self.assertEqual(dl_res.status_code, 200)
+        self.assertIn("attachment; filename=", dl_res["Content-Disposition"])
+        self.assertEqual(self.client.get("/api/reports/pdf/?type=invalid").status_code, 400)

@@ -41,4 +41,11 @@ urlpatterns = [
     
     # Dashboard Stats
     path('dashboard/stats/', views.api_dashboard_stats, name='api_dashboard_stats'),
+
+    # Professional Reports API
+    path('reports/', views.api_reports, name='api_reports'),
+    path('reports/pdf/', views.api_reports_pdf, name='api_reports_pdf'),
+
+    # Notifications API
+    path('notifications/', views.api_notifications, name='api_notifications'),
 ]

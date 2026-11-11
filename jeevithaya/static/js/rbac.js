@@ -163,43 +163,46 @@ function applyRBAC() {
     }
   });
 
-  // Show user email
-  const userEmailEl = document.getElementById("userEmail");
-  if (userEmailEl && session.email) {
-    userEmailEl.textContent = session.email;
-  }
-
-  // Show welcome role
   const roleMap = {
     system_admin: "System Admin",
     hospital_admin: "Hospital Admin",
     frontoffice_user: "Front Office User",
     lab_assistant: "Lab Assistant"
   };
+  const displayRole = roleMap[session.role] || session.role || "User";
+  const displayName = session.name || displayRole || session.email || "User";
+
+  // Show user display name in topbar chip & wire account dropdown
+  const userEmailEl = document.getElementById("userEmail");
+  if (userEmailEl) {
+    userEmailEl.textContent = displayName;
+  }
+
+  const performLogout = () => {
+    try {
+      localStorage.removeItem("jv_session");
+      sessionStorage.removeItem("jv_session");
+    } catch (e) {}
+    window.location.href = "logout.html";
+  };
+
+  initUserDropdown(displayName, displayRole, session.email || "", performLogout);
 
   const roleInfoEl = document.getElementById("roleInfo");
   if (roleInfoEl) {
-    const displayRole = roleMap[session.role] || session.role || "User";
     roleInfoEl.textContent = `Role: ${displayRole}`;
   }
 
   const welcomeEl = document.getElementById("welcome");
   if (welcomeEl && welcomeEl.textContent === "Dashboard") {
-    const displayRole = roleMap[session.role] || session.role || "User";
-    welcomeEl.textContent = `Welcome, ${session.name || displayRole}`;
+    welcomeEl.textContent = `Welcome, ${displayName}`;
   }
 
-  // Logout button handler
+  // Logout button handler (sidebar)
   const logoutBtn = document.getElementById("logoutBtn");
   if (logoutBtn && !logoutBtn.hasAttribute("data-listener-added")) {
     logoutBtn.setAttribute("data-listener-added", "true");
-    logoutBtn.addEventListener("click", () => {
-      try {
-        localStorage.removeItem("jv_session");
-        sessionStorage.removeItem("jv_session");
-      } catch (e) {}
-      window.location.href = "logout.html";
-    });
+    logoutBtn.addEventListener("click", performLogout);
   }
 
   // Initialize theme, clock & collapsible forms on document readiness
@@ -208,6 +211,98 @@ function applyRBAC() {
   initCollapsibleForms();
 
   return session;
+}
+
+function initUserDropdown(displayName, displayRole, email, onLogout) {
+  const chip = document.querySelector(".user-chip");
+  if (!chip) return;
+
+  let wrapper = chip.closest(".user-menu");
+  if (!wrapper) {
+    wrapper = document.createElement("div");
+    wrapper.className = "user-menu";
+    chip.parentNode.insertBefore(wrapper, chip);
+    wrapper.appendChild(chip);
+  }
+
+  if (!chip.hasAttribute("data-dropdown-wired")) {
+    chip.setAttribute("data-dropdown-wired", "true");
+    chip.setAttribute("role", "button");
+    chip.setAttribute("tabindex", "0");
+    chip.setAttribute("aria-haspopup", "menu");
+    chip.setAttribute("aria-expanded", "false");
+
+    const chevron = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    chevron.setAttribute("viewBox", "0 0 24 24");
+    chevron.setAttribute("width", "13");
+    chevron.setAttribute("height", "13");
+    chevron.setAttribute("fill", "none");
+    chevron.setAttribute("stroke", "currentColor");
+    chevron.setAttribute("stroke-width", "2");
+    chevron.setAttribute("stroke-linecap", "round");
+    chevron.setAttribute("stroke-linejoin", "round");
+    chevron.classList.add("user-chevron");
+    chevron.innerHTML = `<polyline points="6 9 12 15 18 9"></polyline>`;
+    chip.appendChild(chevron);
+
+    const menu = document.createElement("div");
+    menu.className = "user-dropdown";
+    menu.setAttribute("role", "menu");
+    menu.innerHTML = `
+      <div class="user-dropdown-header">
+        <div class="user-dropdown-name" id="dropdownUserName"></div>
+        <div class="user-dropdown-meta" id="dropdownUserMeta"></div>
+      </div>
+      <a class="user-dropdown-item" href="profile.html" role="menuitem">
+        <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+          <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+        </svg>
+        <span>Edit Profile</span>
+      </a>
+      <button type="button" class="user-dropdown-item danger" id="dropdownLogoutBtn" role="menuitem">
+        <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+          <polyline points="16 17 21 12 16 7"></polyline>
+          <line x1="21" y1="12" x2="9" y2="12"></line>
+        </svg>
+        <span>Logout</span>
+      </button>
+    `;
+    wrapper.appendChild(menu);
+
+    const toggleMenu = (force) => {
+      const next = typeof force === "boolean" ? force : !wrapper.classList.contains("open");
+      wrapper.classList.toggle("open", next);
+      chip.setAttribute("aria-expanded", String(next));
+    };
+
+    chip.addEventListener("click", (e) => {
+      e.stopPropagation();
+      toggleMenu();
+    });
+    chip.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        toggleMenu();
+      } else if (e.key === "Escape") {
+        toggleMenu(false);
+      }
+    });
+    document.addEventListener("click", (e) => {
+      if (!wrapper.contains(e.target)) toggleMenu(false);
+    });
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") toggleMenu(false);
+    });
+
+    menu.querySelector("#dropdownLogoutBtn")?.addEventListener("click", onLogout);
+  }
+
+  const nameEl = wrapper.querySelector("#dropdownUserName");
+  const metaEl = wrapper.querySelector("#dropdownUserMeta");
+  if (nameEl) nameEl.textContent = displayName;
+  if (metaEl) metaEl.textContent = email ? `${displayRole} • ${email}` : displayRole;
 }
 
 // Universal Collapsible Form Handler

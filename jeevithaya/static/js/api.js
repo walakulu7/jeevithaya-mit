@@ -121,6 +121,27 @@ const dashboardAPI = {
   getStats: () => apiRequest('/dashboard/stats/', 'GET'),
 };
 
+// Professional Reports API
+const reportAPI = {
+  buildQuery: (params = {}) => {
+    const query = new URLSearchParams();
+    Object.entries(params).forEach(([key, val]) => {
+      if (val !== undefined && val !== null && String(val).trim() !== '') {
+        query.set(key, val);
+      }
+    });
+    const qs = query.toString();
+    return qs ? `?${qs}` : '';
+  },
+  get: (params = {}) => apiRequest(`/reports/${reportAPI.buildQuery(params)}`, 'GET'),
+  pdfUrl: (params = {}) => `${API_BASE_URL}/reports/pdf/${reportAPI.buildQuery(params)}`,
+};
+
+// Notifications API
+const notificationAPI = {
+  getAll: () => apiRequest('/notifications/', 'GET'),
+};
+
 // Make all functions globally accessible
 window.apiRequest = apiRequest;
 window.authAPI = authAPI;
@@ -133,3 +154,5 @@ window.verificationAPI = verificationAPI;
 window.disposalAPI = disposalAPI;
 window.userAPI = userAPI;
 window.dashboardAPI = dashboardAPI;
+window.reportAPI = reportAPI;
+window.notificationAPI = notificationAPI;
