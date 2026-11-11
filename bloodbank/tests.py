@@ -182,3 +182,64 @@ class RESTAPITests(TestCase):
         self.assertIn("donorCount", data)
         self.assertIn("unitCount", data)
         self.assertIn("requestCount", data)
+
+    def test_user_edit_status_toggle_and_delete(self):
+        """Validates user CRUD, active/inactive toggling, and inactive login rejection."""
+        create_res = self.client.post(
+            "/api/users/",
+            data={
+                "Name": "Nurse Jane",
+                "Email": "jane@jeevithaya.com",
+                "Role": "lab_assistant",
+                "Password": "Password123!",
+            },
+            content_type="application/json",
+        )
+        self.assertEqual(create_res.status_code, 201)
+        created = create_res.json()
+        user_id = created["UserID"]
+        self.assertEqual(created["Status"], "Active")
+        self.assertNotIn("Password", created)
+
+        # Edit user and deactivate
+        edit_res = self.client.put(
+            f"/api/users/{user_id}/",
+            data={
+                "Name": "Nurse Jane Updated",
+                "Role": "frontoffice_user",
+                "Status": "Inactive",
+            },
+            content_type="application/json",
+        )
+        self.assertEqual(edit_res.status_code, 200)
+        updated = edit_res.json()
+        self.assertEqual(updated["Name"], "Nurse Jane Updated")
+        self.assertEqual(updated["Role"], "frontoffice_user")
+        self.assertEqual(updated["Status"], "Inactive")
+
+        # Inactive user cannot log in
+        login_res = self.client.post(
+            "/api/auth/login/",
+            data={"email": "jane@jeevithaya.com", "password": "Password123!"},
+            content_type="application/json",
+        )
+        self.assertEqual(login_res.status_code, 403)
+
+        # Reactivate and verify login works
+        reactivate_res = self.client.put(
+            f"/api/users/{user_id}/",
+            data={"Status": "Active"},
+            content_type="application/json",
+        )
+        self.assertEqual(reactivate_res.status_code, 200)
+        login_ok = self.client.post(
+            "/api/auth/login/",
+            data={"email": "jane@jeevithaya.com", "password": "Password123!"},
+            content_type="application/json",
+        )
+        self.assertEqual(login_ok.status_code, 200)
+
+        # Delete user
+        del_res = self.client.delete(f"/api/users/{user_id}/")
+        self.assertEqual(del_res.status_code, 204)
+        self.assertFalse(User.objects.filter(UserID=user_id).exists())

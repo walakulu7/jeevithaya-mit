@@ -132,6 +132,9 @@ def api_auth_login(request):
         if not user.check_password(password):
             return JsonResponse({'error': 'Invalid email or password.'}, status=401)
 
+        if getattr(user, 'Status', 'Active') == 'Inactive':
+            return JsonResponse({'error': 'Account is inactive. Please contact an administrator.'}, status=403)
+
         # Store session
         user_dict = model_to_dict(user)
         user_dict.pop('Password', None)
@@ -169,20 +172,29 @@ def api_auth_me(request):
 
 
 # ============= USER API =============
+def serialize_user(user):
+    data = model_to_dict(user)
+    data.pop('Password', None)
+    return data
+
+
 @csrf_exempt
 @require_http_methods(["GET", "POST"])
 def api_users(request):
     if request.method == 'GET':
         users = User.objects.all()
-        data = [model_to_dict(user) for user in users]
-        return JsonResponse(data, safe=False)
+        return JsonResponse([serialize_user(user) for user in users], safe=False)
     
     elif request.method == 'POST':
         try:
             data = json.loads(request.body)
             normalized = normalize_payload(User, data)
-            user = User.objects.create(**normalized)
-            return JsonResponse(model_to_dict(user), status=201)
+            raw_password = normalized.pop('Password', '')
+            user = User(**normalized)
+            if raw_password:
+                user.set_password(raw_password)
+            user.save()
+            return JsonResponse(serialize_user(user), status=201)
         except Exception as e:
             return JsonResponse({'error': str(e)}, status=400)
 
@@ -196,16 +208,19 @@ def api_user_detail(request, user_id):
         return JsonResponse({'error': 'User not found'}, status=404)
     
     if request.method == 'GET':
-        return JsonResponse(model_to_dict(user))
+        return JsonResponse(serialize_user(user))
     
     elif request.method == 'PUT':
         try:
             data = json.loads(request.body)
             normalized = normalize_payload(User, data)
+            raw_password = normalized.pop('Password', None)
             for key, value in normalized.items():
                 setattr(user, key, value)
+            if raw_password:
+                user.set_password(raw_password)
             user.save()
-            return JsonResponse(model_to_dict(user))
+            return JsonResponse(serialize_user(user))
         except Exception as e:
             return JsonResponse({'error': str(e)}, status=400)
     

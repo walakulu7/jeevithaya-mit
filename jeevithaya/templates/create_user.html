@@ -3,9 +3,9 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Jeevithaya | Create User</title>
-  <link rel="icon" type="image/svg+xml" href="{% static 'img/logo.svg' %}?v=4.6" />
-  <link rel="stylesheet" href="{% static 'css/style.css' %}?v=4.6" />
+  <title>Jeevithaya | Users</title>
+  <link rel="icon" type="image/svg+xml" href="{% static 'img/logo.svg' %}?v=4.9" />
+  <link rel="stylesheet" href="{% static 'css/style.css' %}?v=4.9" />
 </head>
 <body>
 
@@ -13,7 +13,7 @@
   <!-- Sidebar -->
   <aside class="sidebar">
     <div class="brand">
-      <div class="logo"><img src="{% static 'img/logo.svg' %}?v=4.6" alt="Jeevithaya Logo" /></div>
+      <div class="logo"><img src="{% static 'img/logo.svg' %}?v=4.9" alt="Jeevithaya Logo" /></div>
       <div>
         <h1>Jeevithaya</h1>
         <p class="muted">Centralized Blood & Plasma</p>
@@ -59,7 +59,7 @@
       </a>
       <a class="menu-item active" href="create_user.html" data-role="system_admin">
         <svg class="nav-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>
-        <span>Create User</span>
+        <span>Users</span>
       </a>
       <a class="menu-item" href="profile.html" data-role="system_admin,hospital_admin,frontoffice_user,lab_assistant">
         <svg class="nav-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
@@ -133,7 +133,7 @@
     <!-- Form (Collapsible) -->
     <section class="card collapsible-form-card" id="userFormCard">
       <div class="form-header">
-        <h3>Create New User</h3>
+        <h3 id="formTitle">Create New User</h3>
         <button type="button" class="btn-close-form" data-action="close-form">✕ Cancel</button>
       </div>
       <form id="userForm" class="grid-form">
@@ -152,19 +152,28 @@
           <label class="label">Role</label>
           <select id="role" class="input" required>
             <option value="">-- Select Role --</option>
-            <option>Hospital Admin</option>
-            <option>Front Office</option>
-            <option>Lab Assistant</option>
+            <option value="system_admin">System Admin</option>
+            <option value="hospital_admin">Hospital Admin</option>
+            <option value="frontoffice_user">Front Office User</option>
+            <option value="lab_assistant">Lab Assistant</option>
           </select>
         </div>
 
         <div>
+          <label class="label">Status</label>
+          <select id="status" class="input" required>
+            <option value="Active">Active</option>
+            <option value="Inactive">Inactive</option>
+          </select>
+        </div>
+
+        <div class="span-2">
           <label class="label">Password</label>
           <input id="password" type="password" class="input" required>
         </div>
 
         <div class="actions">
-          <button class="btn btn-primary">Create User</button>
+          <button id="submitBtn" class="btn btn-primary" type="submit">Create User</button>
           <span id="msg" class="msg"></span>
         </div>
 
@@ -173,7 +182,10 @@
 
     <!-- Users Table -->
     <section class="card table-card">
-      <h3>Users List</h3>
+      <div class="table-head">
+        <h3>Users List</h3>
+        <span id="tableMsg" class="msg"></span>
+      </div>
 
       <table id="userTable">
         <thead>
@@ -182,6 +194,7 @@
             <th>Name</th>
             <th>Email</th>
             <th>Role</th>
+            <th>Status</th>
             <th>Action</th>
           </tr>
         </thead>
@@ -192,9 +205,9 @@
   </main>
 </div>
 
-<script src="{% static 'js/rbac.js' %}?v=4.6"></script>
-<script src="{% static 'js/api.js' %}?v=4.6"></script>
-<script src="{% static 'js/create_user.js' %}?v=4.6"></script>
+<script src="{% static 'js/rbac.js' %}?v=4.9"></script>
+<script src="{% static 'js/api.js' %}?v=4.9"></script>
+<script src="{% static 'js/create_user.js' %}?v=4.9"></script>
 </body>
 </html>
 

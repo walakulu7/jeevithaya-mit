@@ -789,6 +789,14 @@ body {
   font-size: 13.5px;
 }
 
+.reports-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+  margin-bottom: 24px;
+  align-items: stretch;
+}
+
 .table-card {
   overflow-x: auto;
   border-radius: 16px;
@@ -967,6 +975,35 @@ td.status {
   border-color: var(--danger);
 }
 
+.btn-mini.warn {
+  border-color: rgba(245, 158, 11, 0.35);
+  color: var(--warning);
+  background: var(--warning-subtle);
+}
+
+.btn-mini.warn:hover {
+  background: rgba(245, 158, 11, 0.2);
+  border-color: var(--warning);
+}
+
+.btn-mini.success {
+  border-color: rgba(34, 197, 94, 0.35);
+  color: var(--success);
+  background: var(--success-subtle);
+}
+
+.btn-mini.success:hover {
+  background: rgba(34, 197, 94, 0.2);
+  border-color: var(--success);
+}
+
+.action-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: nowrap;
+}
+
 /* Grid Form Layout */
 .grid-form {
   display: grid;
@@ -992,6 +1029,7 @@ td.status {
   .grid-form .span-2, .grid-form .actions { grid-column: span 1; }
   .topbar-actions { flex-wrap: wrap; }
   .cards { grid-template-columns: 1fr 1fr; }
+  .reports-grid { grid-template-columns: 1fr; }
   .table-tools { flex-wrap: wrap; width: 100%; }
   .table-tools select.input,
   .table-tools input.input,

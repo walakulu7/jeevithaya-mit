@@ -99,12 +99,17 @@ class User(models.Model):
         ('frontoffice_user', 'Front Office User'),
         ('lab_assistant', 'Lab Assistant'),
     ]
+    STATUS_CHOICES = [
+        ('Active', 'Active'),
+        ('Inactive', 'Inactive'),
+    ]
 
     UserID = models.AutoField(primary_key=True)
     Name = models.CharField(max_length=100, null=False)
     Email = models.EmailField(max_length=100, unique=True)
     Password = models.CharField(max_length=255)
     Role = models.CharField(max_length=50, choices=ROLE_CHOICES)
+    Status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Active')
     HospitalID = models.IntegerField(null=True, blank=True)
     ContactNo = models.CharField(max_length=15, null=True, blank=True)
     CreatedAt = models.DateTimeField(auto_now_add=True)
