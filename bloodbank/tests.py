@@ -298,3 +298,11 @@ class RESTAPITests(TestCase):
         self.assertEqual(dl_res.status_code, 200)
         self.assertIn("attachment; filename=", dl_res["Content-Disposition"])
         self.assertEqual(self.client.get("/api/reports/pdf/?type=invalid").status_code, 400)
+
+        # Notifications API returns actionable alerts
+        notif_res = self.client.get("/api/notifications/")
+        self.assertEqual(notif_res.status_code, 200)
+        notif_data = notif_res.json()
+        self.assertEqual(notif_data["count"], len(notif_data["notifications"]))
+        self.assertGreaterEqual(notif_data["count"], 4)
+        self.assertTrue(all({"id", "title", "message", "severity", "link"}.issubset(n.keys()) for n in notif_data["notifications"]))

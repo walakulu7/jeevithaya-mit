@@ -209,8 +209,153 @@ function applyRBAC() {
   initTheme();
   initLiveClock();
   initCollapsibleForms();
+  initNotifications(session);
 
   return session;
+}
+
+function initNotifications(session) {
+  const clockEl = document.querySelector(".topbar-actions .clock-widget");
+  const actionsEl = document.querySelector(".topbar-actions");
+  if (!actionsEl || document.querySelector(".notif-menu")) return;
+
+  const storageKey = `jv_notif_read_${(session && session.email) || "guest"}`;
+  const loadReadIds = () => {
+    try { return new Set(JSON.parse(localStorage.getItem(storageKey)) || []); }
+    catch { return new Set(); }
+  };
+  const saveReadIds = (idSet) => {
+    try { localStorage.setItem(storageKey, JSON.stringify([...idSet].slice(-200))); }
+    catch {}
+  };
+
+  const wrapper = document.createElement("div");
+  wrapper.className = "notif-menu";
+  wrapper.innerHTML = `
+    <button type="button" class="notif-btn" id="notifToggleBtn" title="Notifications" aria-haspopup="menu" aria-expanded="false">
+      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+        <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+      </svg>
+      <span class="notif-badge" id="notifBadge" hidden>0</span>
+    </button>
+    <div class="notif-dropdown" id="notifDropdown" role="menu">
+      <div class="notif-header">
+        <span class="notif-header-title">Notifications</span>
+        <button type="button" class="notif-mark-read" id="notifMarkAllRead">Mark all read</button>
+      </div>
+      <div class="notif-list" id="notifList">
+        <div class="notif-empty">Checking alerts...</div>
+      </div>
+    </div>
+  `;
+
+  if (clockEl) {
+    actionsEl.insertBefore(wrapper, clockEl);
+  } else {
+    actionsEl.prepend(wrapper);
+  }
+
+  const toggleBtn = wrapper.querySelector("#notifToggleBtn");
+  const badgeEl = wrapper.querySelector("#notifBadge");
+  const listEl = wrapper.querySelector("#notifList");
+  const markAllBtn = wrapper.querySelector("#notifMarkAllRead");
+
+  let currentItems = [];
+
+  const escHtml = (str) => String(str ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+
+  const renderNotifications = () => {
+    const readIds = loadReadIds();
+    const unreadCount = currentItems.filter(item => !readIds.has(item.id)).length;
+
+    if (badgeEl) {
+      if (unreadCount > 0) {
+        badgeEl.textContent = unreadCount > 99 ? "99+" : String(unreadCount);
+        badgeEl.hidden = false;
+      } else {
+        badgeEl.textContent = "0";
+        badgeEl.hidden = true;
+      }
+    }
+
+    if (!listEl) return;
+    if (currentItems.length === 0) {
+      listEl.innerHTML = `<div class="notif-empty">All caught up — no active alerts.</div>`;
+      return;
+    }
+
+    listEl.innerHTML = currentItems.map(item => {
+      const isUnread = !readIds.has(item.id);
+      return `
+        <a class="notif-item${isUnread ? " unread" : ""}" href="${escHtml(item.link || "dashboard.html")}" data-notif-id="${escHtml(item.id)}">
+          <span class="notif-dot ${escHtml(item.severity || "info")}"></span>
+          <div>
+            <div class="notif-item-title">${escHtml(item.title)}</div>
+            <div class="notif-item-msg">${escHtml(item.message)}</div>
+          </div>
+        </a>
+      `;
+    }).join("");
+  };
+
+  const fetchNotifications = async () => {
+    try {
+      const res = await fetch("/api/notifications/", { credentials: "same-origin" });
+      if (res.ok) {
+        const data = await res.json();
+        if (Array.isArray(data.notifications)) {
+          currentItems = data.notifications;
+          renderNotifications();
+          return;
+        }
+      }
+    } catch {}
+    currentItems = [];
+    renderNotifications();
+  };
+
+  const toggleDropdown = (force) => {
+    const next = typeof force === "boolean" ? force : !wrapper.classList.contains("open");
+    wrapper.classList.toggle("open", next);
+    toggleBtn?.setAttribute("aria-expanded", String(next));
+  };
+
+  toggleBtn?.addEventListener("click", (e) => {
+    e.stopPropagation();
+    toggleDropdown();
+  });
+
+  markAllBtn?.addEventListener("click", (e) => {
+    e.stopPropagation();
+    const readIds = loadReadIds();
+    currentItems.forEach(item => readIds.add(item.id));
+    saveReadIds(readIds);
+    renderNotifications();
+  });
+
+  listEl?.addEventListener("click", (e) => {
+    const link = e.target.closest("[data-notif-id]");
+    if (!link) return;
+    const readIds = loadReadIds();
+    readIds.add(link.getAttribute("data-notif-id"));
+    saveReadIds(readIds);
+    renderNotifications();
+  });
+
+  document.addEventListener("click", (e) => {
+    if (!wrapper.contains(e.target)) toggleDropdown(false);
+  });
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") toggleDropdown(false);
+  });
+
+  fetchNotifications();
+  setInterval(fetchNotifications, 60000);
 }
 
 function initUserDropdown(displayName, displayRole, email, onLogout) {
