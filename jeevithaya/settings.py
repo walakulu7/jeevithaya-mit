@@ -31,6 +31,9 @@ DEBUG = os.environ.get('DJANGO_DEBUG', 'True').lower() in ('true', '1', 'yes')
 
 ALLOWED_HOSTS = ['*'] if DEBUG else os.environ.get('ALLOWED_HOSTS', '').split(',')
 
+# Allow form posts from GitHub Codespaces forwarded URLs (https://<name>-8000.app.github.dev)
+CSRF_TRUSTED_ORIGINS = ['https://*.app.github.dev']
+
 
 # Application definition
 
