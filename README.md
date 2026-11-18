@@ -34,12 +34,27 @@
 
 The application has been engineered to showcase the **4 Core Pillars of OOP**:
 
-| OOP Pillar        | Code Implementation                                                         | Description                                                                                                                                  |
-| :---------------- | :-------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Abstraction**   | `BaseAuditableEntity`, `BasePerson`, `BaseService`                          | Abstract base models (`models.py`) and service interfaces (`services.py`) defining uniform contracts.                                        |
-| **Inheritance**   | `Donor(BasePerson)`, `Patient(BasePerson)`                                  | Domain models inherit common demographic properties and age-calculation methods from `BasePerson`.                                           |
-| **Encapsulation** | `Inventory.is_expired()`, `User.check_password()`, `BloodRequest.approve()` | State transitions, expiry calculations, and password security are encapsulated directly within entities.                                     |
-| **Polymorphism**  | `BaseReportStrategy` & `AnalyticsContext`                                   | Strategy Pattern in `services.py` executes `InventoryReportStrategy`, `DonationReportStrategy`, and `RequestReportStrategy` polymorphically. |
+| OOP Pillar        | Code Implementation | Description |
+| :---------------- | :------------------ | :---------- |
+| **Abstraction**   | `BaseAuditableEntity`, `StatefulEntity`, `BasePerson` (`models.py`); `BaseService`, `BaseReportStrategy` (`services.py`); `ModelResource` (`api/common.py`) | Abstract classes define the contracts; concrete classes supply only what differs. |
+| **Inheritance**   | Every model inherits `BaseAuditableEntity`; `Donor`/`Patient` inherit `BasePerson`; `BloodRequest`/`Inventory` inherit `StatefulEntity`; one `ModelResource` subclass per API resource | Audit fields, age calculation, lifecycle rules and CRUD behaviour are written once. |
+| **Encapsulation** | `StatefulEntity.transition_to()` with per-class `TRANSITIONS`; `BloodRequest.approve()/fulfill()/reject()`; `Inventory.mark_issued()/mark_discarded()`; `User.set_password()/check_password()` | Status can only change through guarded methods, and passwords are only stored hashed. |
+| **Polymorphism**  | `AnalyticsContext` runs any `BaseReportStrategy`; `ModelResource` hooks (`perform_create`, `perform_update`, `authorize`) overridden per resource | The caller is unaware of the concrete class. |
+| **Association**   | Foreign keys: `Donation → Donor`, `Inventory → Donation, Donor`, `Verification → Inventory, Donor`, `Disposal → Inventory`, `BloodRequest → Patient` | Objects navigate to each other (`unit.donation.donor`) and the database enforces integrity. |
+
+### SOLID Principles
+
+| Principle | Where it is applied |
+| :-------- | :------------------ |
+| **Single Responsibility** | `models.py` holds entity rules, `services.py` holds workflows, `api/` handles HTTP only (split into `auth`, `resources`, `reports`, `common`), `pdf_reports.py` handles rendering. |
+| **Open/Closed** | New report = new `BaseReportStrategy` subclass + one map entry. New API resource = new `ModelResource` subclass. New lifecycle = a `TRANSITIONS` table. Existing code is not edited. |
+| **Liskov Substitution** | Any `BaseReportStrategy`, `BaseService` or `ModelResource` subclass can replace its parent; tests swap in subclasses of `InventoryService` and `RequestFulfillmentService`. |
+| **Interface Segregation** | Small, focused contracts: `BaseReportStrategy.generate()`, `BaseService.model`, `ModelResource` hooks that subclasses override only when needed. |
+| **Dependency Inversion** | `RequestFulfillmentService` receives its `InventoryService` through the constructor; views obtain services from `container.py` (the composition root), so implementations can be replaced without touching views. |
+
+### Security
+
+All API endpoints and pages require a logged-in, active user, and each is limited to the roles allowed to use it (checked on the server, see `api/common.py` and `jeevithaya/views.py`). Write requests are protected by Django's CSRF check.
 
 ---
 

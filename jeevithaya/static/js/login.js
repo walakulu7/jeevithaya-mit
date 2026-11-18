@@ -4,64 +4,8 @@ const togglePwd = document.getElementById("togglePwd");
 const passwordEl = document.getElementById("password");
 const forgotLink = document.getElementById("forgotLink");
 
-const USERS_KEY = "jv_users";
-
-// Initialize default demo user profiles if they don't exist
-function initializeDemoUsers() {
-  const existingUsers = loadUsers();
-  
-  // Only initialize if no users exist
-  if (existingUsers.length === 0) {
-    const demoUsers = [
-      {
-        userId: "U001",
-        name: "System Administrator",
-        email: "admin@jeevithaya.com",
-        role: "system_admin",
-        password: "admin123"
-      },
-      {
-        userId: "U002",
-        name: "Hospital Administrator",
-        email: "hospital@jeevithaya.com",
-        role: "hospital_admin",
-        password: "hospital123"
-      },
-      {
-        userId: "U003",
-        name: "Front Office User",
-        email: "frontoffice@jeevithaya.com",
-        role: "frontoffice_user",
-        password: "front123"
-      },
-      {
-        userId: "U004",
-        name: "Lab Assistant",
-        email: "lab@jeevithaya.com",
-        role: "lab_assistant",
-        password: "lab123"
-      }
-    ];
-    
-    saveUsers(demoUsers);
-    console.log("Demo users initialized");
-  }
-}
-
-function loadUsers() {
-  try {
-    return JSON.parse(localStorage.getItem(USERS_KEY)) || [];
-  } catch {
-    return [];
-  }
-}
-
-function saveUsers(list) {
-  localStorage.setItem(USERS_KEY, JSON.stringify(list));
-}
-
-// Initialize demo users on page load
-initializeDemoUsers();
+// Remove demo credentials that older versions cached in the browser
+try { localStorage.removeItem("jv_users"); } catch (e) {}
 
 togglePwd.addEventListener("click", () => {
   const isPwd = passwordEl.type === "password";
@@ -71,14 +15,8 @@ togglePwd.addEventListener("click", () => {
 
 forgotLink.addEventListener("click", (e) => {
   e.preventDefault();
-  const users = loadUsers();
-  if (users.length > 0) {
-    msg.className = "msg err";
-    msg.textContent = "Contact your system administrator for password reset.";
-  } else {
-    msg.className = "msg err";
-    msg.textContent = "Demo mode: password is 1234 🙂";
-  }
+  msg.className = "msg err";
+  msg.textContent = "Contact your system administrator for password reset.";
 });
 
 form.addEventListener("submit", async (e) => {
@@ -91,92 +29,33 @@ form.addEventListener("submit", async (e) => {
   if (!email) return showError("Please enter your email.");
   if (!password) return showError("Please enter your password.");
 
-  // Try authenticating via Django Backend API first
-  if (window.authAPI && typeof window.authAPI.login === "function") {
-    try {
-      const response = await window.authAPI.login(email, password);
-      if (response && response.user) {
-        const u = response.user;
-        const session = {
-          role: u.Role,
-          email: u.Email,
-          name: u.Name,
-          userId: u.UserID,
-          loginAt: new Date().toISOString()
-        };
+  // Authentication happens only on the server; the browser keeps display info
+  try {
+    const response = await window.authAPI.login(email, password);
+    const u = response && response.user;
+    if (!u) return showError("Login failed. Please try again.");
 
-        if (remember) {
-          localStorage.setItem("jv_session", JSON.stringify(session));
-        } else {
-          sessionStorage.setItem("jv_session", JSON.stringify(session));
-        }
+    const session = {
+      role: u.Role,
+      email: u.Email,
+      name: u.Name,
+      userId: u.UserID,
+      loginAt: new Date().toISOString()
+    };
+    const store = remember ? localStorage : sessionStorage;
+    store.setItem("jv_session", JSON.stringify(session));
 
-        showOk(`Welcome back, ${u.Name || 'User'}! Redirecting...`);
-        setTimeout(() => {
-          window.location.href = "dashboard.html";
-        }, 500);
-        return;
-      }
-    } catch (apiErr) {
-      console.warn("Backend login attempt:", apiErr.message);
-      // If error is invalid credentials, show error directly
-      if (apiErr.message && !apiErr.message.includes("Failed to fetch") && !apiErr.message.includes("NetworkError")) {
-        return showError(apiErr.message);
-      }
+    showOk(`Welcome back, ${u.Name || "User"}! Redirecting...`);
+    setTimeout(() => {
+      window.location.href = "dashboard.html";
+    }, 500);
+  } catch (apiErr) {
+    console.warn("Login failed:", apiErr.message);
+    if (apiErr.message && (apiErr.message.includes("Failed to fetch") || apiErr.message.includes("NetworkError"))) {
+      return showError("Cannot reach the server. Check your connection and try again.");
     }
+    showError(apiErr.message || "Invalid email or password.");
   }
-
-  // Fallback to local demo users if API server is offline
-  const users = loadUsers();
-  const user = users.find(
-    u => u.email.toLowerCase() === email && 
-         u.password === password
-  );
-
-  if (!user) {
-    if (users.length === 0 && password === "1234") {
-      const session = {
-        role: "system_admin",
-        email,
-        name: email.split("@")[0] || "User",
-        loginAt: new Date().toISOString()
-      };
-
-      if (remember) {
-        localStorage.setItem("jv_session", JSON.stringify(session));
-      } else {
-        sessionStorage.setItem("jv_session", JSON.stringify(session));
-      }
-
-      showOk("Login success! Redirecting...");
-      setTimeout(() => {
-        window.location.href = "dashboard.html";
-      }, 500);
-      return;
-    }
-    return showError("Invalid email or password.");
-  }
-
-  // Save session with user details
-  const session = {
-    role: user.role,
-    email: user.email,
-    name: user.name,
-    userId: user.userId,
-    loginAt: new Date().toISOString()
-  };
-
-  if (remember) {
-    localStorage.setItem("jv_session", JSON.stringify(session));
-  } else {
-    sessionStorage.setItem("jv_session", JSON.stringify(session));
-  }
-
-  showOk("Login success! Redirecting...");
-
-  setTimeout(() => {
-    window.location.href = "dashboard.html";
-  }, 600);
 });
 
 function showError(text){

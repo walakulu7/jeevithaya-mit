@@ -9,10 +9,11 @@ Implements core Object-Oriented Programming (OOP) design patterns:
 
 from abc import ABC, abstractmethod
 from datetime import date, timedelta
+from django.db import transaction
 from django.db.models import Sum
 from .models import (
     User, Donor, Patient, BloodRequest, Donation,
-    Inventory, Verification, Disposal
+    Inventory, Verification, Disposal, InvalidTransition,
 )
 
 
@@ -23,12 +24,35 @@ from .models import (
 class BaseService(ABC):
     """
     Abstract Base Class for all Domain Services.
-    Enforces standardized lifecycle and logging methods.
+
+    Each concrete service names the model it manages; shared read operations
+    are implemented once here (Template Method), and subclasses add the
+    business workflows for their own aggregate.
     """
+
+    @property
     @abstractmethod
+    def model(self):
+        """The Django model class this service is responsible for."""
+
     def get_all(self):
-        """Retrieve all records managed by this service."""
-        pass
+        """Retrieve all records managed by this service, newest first."""
+        return self.model.objects.all().order_by('-CreatedAt')
+
+    def get(self, pk):
+        """Retrieve one record by primary key, or None."""
+        return self.model.objects.filter(pk=pk).first()
+
+
+def next_sequential_id(model, prefix, start=1001):
+    """Return the next free ID of the form <prefix><number> for a model's primary key."""
+    pk_name = model._meta.pk.name
+    numbers = []
+    for value in model.objects.filter(**{f"{pk_name}__startswith": prefix}).values_list(pk_name, flat=True):
+        suffix = value[len(prefix):]
+        if suffix.isdigit():
+            numbers.append(int(suffix))
+    return f"{prefix}{max(numbers, default=start - 1) + 1}"
 
 
 # ==============================================================================
@@ -38,46 +62,46 @@ class BaseService(ABC):
 class InventoryService(BaseService):
     """
     Service class encapsulating inventory management, cold-chain shelf-life
-    tracking, stock reservations, and automated unit dispatching.
+    tracking, and lab screening outcomes for stored units.
     """
-
-    def get_all(self):
-        return Inventory.objects.all().order_by('-CreatedAt')
+    model = Inventory
 
     def get_available_units(self, blood_group=None, item_type=None):
-        """Query currently usable and non-expired blood/plasma units."""
+        """Query usable, non-expired units, closest to expiry first (FEFO)."""
         qs = Inventory.objects.filter(Status='Available', ExpiryDate__gte=date.today())
         if blood_group:
             qs = qs.filter(BloodGroup=blood_group)
         if item_type:
             qs = qs.filter(Type=item_type)
-        return qs
+        return qs.order_by('ExpiryDate', 'UnitID')
 
-    def process_verification_result(self, unit_id, donor_id, result, verified_by, notes=""):
+    def process_verification_result(self, verification):
         """
-        Business Rule Workflow:
-        When quality verification completes, update unit status or trigger disposal.
+        Business rule: a unit that fails serological screening is discarded
+        and a bio-waste disposal record is created for it (once).
+        Returns the disposal record created, or None.
         """
-        unit = Inventory.objects.filter(UnitID=unit_id).first()
-        if not unit:
+        if verification.OverallResult != 'Failed':
             return None
 
-        if result == 'Passed':
-            unit.Status = 'Available'
-            unit.save()
-        else:
-            unit.Status = 'Expired'
-            unit.save()
-            # Automatically record bio-waste disposal
-            Disposal.objects.create(
-                DisposalID=f"DISP{unit_id[-4:]}",
-                UnitID=unit_id,
-                DisposalDate=date.today(),
-                Reason='Failed Verification',
-                DisposedBy=verified_by,
-                Notes=f"Auto-disposed due to failed testing. Notes: {notes}"
-            )
-        return unit
+        unit = verification.unit
+        unit.mark_discarded()  # raises InvalidTransition if the unit was already issued
+
+        if unit.disposals.exists():
+            return None
+        return Disposal.objects.create(
+            DisposalID=next_sequential_id(Disposal, 'DISP'),
+            unit=unit,
+            DisposalDate=date.today(),
+            Reason='Failed Verification',
+            DisposedBy=verification.VerifiedBy,
+            Notes=f"Auto-disposed after failed screening {verification.VerificationID}. {verification.Notes or ''}".strip(),
+        )
+
+    def record_disposal(self, disposal):
+        """Disposing of a unit takes it out of use permanently."""
+        disposal.unit.mark_discarded()
+        return disposal
 
     def auto_scan_and_flag_expired(self):
         """Scans inventory for units past their expiry date and updates status."""
@@ -85,49 +109,67 @@ class InventoryService(BaseService):
             ExpiryDate__lt=date.today(),
             Status__in=['Available', 'Reserved']
         )
-        count = expired_units.count()
+        count = 0
         for u in expired_units:
-            u.Status = 'Expired'
-            u.save()
+            u.mark_expired()
+            count += 1
         return count
 
 
 class RequestFulfillmentService(BaseService):
     """
-    Service class encapsulating hospital blood request fulfillment,
-    compatibility checking, and automatic stock deduction.
-    """
+    Service class encapsulating the blood request workflow: approval,
+    rejection and fulfilment with automatic stock deduction.
 
-    def get_all(self):
-        return BloodRequest.objects.all().order_by('-CreatedAt')
+    Depends on InventoryService for stock queries (injected, Dependency Inversion).
+    """
+    model = BloodRequest
+
+    def __init__(self, inventory_service=None):
+        self.inventory = inventory_service or InventoryService()
+
+    def change_status(self, request_obj, new_status):
+        """Move a request to new_status through the model's guarded transitions."""
+        if new_status == request_obj.Status:
+            return {"success": True, "message": "Status unchanged.", "units_issued": []}
+        if new_status == 'Fulfilled':
+            return self.fulfill_request(request_obj.RequestID)
+        actions = {
+            'Approved': request_obj.approve,
+            'Rejected': request_obj.reject,
+            'Pending': request_obj.reopen,
+        }
+        if new_status not in actions:
+            raise InvalidTransition(f"Unknown request status: {new_status}")
+        actions[new_status]()
+        return {"success": True, "message": f"Request {request_obj.RequestID} is now {new_status}.", "units_issued": []}
 
     def fulfill_request(self, request_id):
         """
-        Attempts to allocate matching inventory units to a pending hospital request.
+        Allocates matching inventory units to an approved hospital request.
         """
         req = BloodRequest.objects.filter(RequestID=request_id).first()
         if not req:
             raise ValueError(f"Request {request_id} not found.")
 
-        # Find matching available units
-        matching_units = Inventory.objects.filter(
-            BloodGroup=req.BloodGroup,
-            Type=req.Type,
-            Status='Available',
-            ExpiryDate__gte=date.today()
-        )[:req.Quantity]
+        if req.Status == 'Fulfilled':
+            return {"success": True, "message": f"Request {request_id} is already fulfilled.", "units_issued": []}
+        if not req.can_transition_to('Fulfilled'):
+            raise InvalidTransition(f"Request {request_id} must be Approved before it can be fulfilled (currently {req.Status}).")
 
-        if matching_units.count() < req.Quantity:
-            return {
-                "success": False,
-                "message": f"Insufficient stock for {req.BloodGroup} {req.Type}. Required: {req.Quantity}, Available: {matching_units.count()}"
-            }
+        with transaction.atomic():
+            matching_units = list(self.inventory.get_available_units(req.BloodGroup, req.Type)[:req.Quantity])
 
-        # Mark units as Issued
-        for unit in matching_units:
-            unit.mark_issued()
+            if len(matching_units) < req.Quantity:
+                return {
+                    "success": False,
+                    "message": f"Insufficient stock for {req.BloodGroup} {req.Type}. Required: {req.Quantity}, Available: {len(matching_units)}"
+                }
 
-        req.fulfill()
+            for unit in matching_units:
+                unit.mark_issued()
+
+            req.fulfill()
         return {
             "success": True,
             "message": f"Request {request_id} successfully fulfilled.",
@@ -270,8 +312,8 @@ class InventoryReportStrategy(BaseReportStrategy):
                 buckets[bucket] += u.Quantity
             ledger.append({
                 "unitId": u.UnitID,
-                "donationId": u.DonationID,
-                "donorId": u.DonorID,
+                "donationId": u.donation_id,
+                "donorId": u.donor_id,
                 "bloodBankId": u.BloodBankID,
                 "bloodGroup": u.BloodGroup,
                 "type": u.Type,
@@ -317,15 +359,11 @@ class DonationReportStrategy(BaseReportStrategy):
             Donor.objects.all(), norm, date_field=None, has_blood_group=True, has_item_type=False
         )
         donations_qs = _apply_query_filters(
-            Donation.objects.all(), norm, date_field='Date', has_blood_group=True, has_item_type=True
+            Donation.objects.select_related('donor'), norm, date_field='Date', has_blood_group=True, has_item_type=True
         ).order_by('-Date', '-CreatedAt')
 
         donors = list(donors_qs)
         donations = list(donations_qs)
-        donor_lookup = {d.DonorID: d for d in donors}
-        if len(donor_lookup) < Donation.objects.count():
-            for d in Donor.objects.all():
-                donor_lookup.setdefault(d.DonorID, d)
 
         eligible_count = sum(1 for d in donors if d.Status == 'Eligible')
         not_eligible_count = len(donors) - eligible_count
@@ -357,9 +395,9 @@ class DonationReportStrategy(BaseReportStrategy):
 
         donor_totals = {}
         for dn in donations:
-            entry = donor_totals.setdefault(dn.DonorID, {
-                "donorId": dn.DonorID,
-                "name": donor_lookup[dn.DonorID].Name if dn.DonorID in donor_lookup else dn.DonorID,
+            entry = donor_totals.setdefault(dn.donor_id, {
+                "donorId": dn.donor_id,
+                "name": dn.donor.Name,
                 "bloodGroup": dn.BloodGroup,
                 "donations": 0,
                 "units": 0,
@@ -375,8 +413,8 @@ class DonationReportStrategy(BaseReportStrategy):
         ledger = [
             {
                 "donationId": dn.DonationID,
-                "donorId": dn.DonorID,
-                "donorName": donor_lookup[dn.DonorID].Name if dn.DonorID in donor_lookup else dn.DonorID,
+                "donorId": dn.donor_id,
+                "donorName": dn.donor.Name,
                 "date": dn.Date.isoformat(),
                 "bloodGroup": dn.BloodGroup,
                 "type": dn.Type,
@@ -418,11 +456,10 @@ class RequestReportStrategy(BaseReportStrategy):
     def generate(self, days=None, filters=None):
         norm = _normalize_report_filters(days, filters)
         qs = _apply_query_filters(
-            BloodRequest.objects.all(), norm, date_field='RequestDate', has_blood_group=True, has_item_type=True
+            BloodRequest.objects.select_related('patient'), norm, date_field='RequestDate', has_blood_group=True, has_item_type=True
         ).order_by('-RequestDate', '-CreatedAt')
 
         requests_list = list(qs)
-        patients = {p.PatientID: p for p in Patient.objects.all()}
         today = date.today()
         avail_map = {}
         for inv in Inventory.objects.filter(Status='Available', ExpiryDate__gte=today):
@@ -473,12 +510,12 @@ class RequestReportStrategy(BaseReportStrategy):
 
         ledger = []
         for r in requests_list:
-            pt = patients.get(r.PatientID)
+            pt = r.patient
             avail = avail_map.get((r.BloodGroup, r.Type), 0)
             ledger.append({
                 "requestId": r.RequestID,
-                "patientId": r.PatientID,
-                "patientName": pt.Name if pt else r.PatientID,
+                "patientId": r.patient_id,
+                "patientName": pt.Name,
                 "hospitalId": r.HospitalID,
                 "requestDate": r.RequestDate.isoformat(),
                 "bloodGroup": r.BloodGroup,
@@ -518,13 +555,12 @@ class VerificationReportStrategy(BaseReportStrategy):
     def generate(self, days=None, filters=None):
         norm = _normalize_report_filters(days, filters)
         qs = _apply_query_filters(
-            Verification.objects.all(), norm, date_field='Date', has_blood_group=False, has_item_type=False
+            Verification.objects.select_related('unit'), norm, date_field='Date', has_blood_group=False, has_item_type=False
         ).order_by('-Date', '-CreatedAt')
 
-        inv_map = {u.UnitID: u for u in Inventory.objects.all()}
         ver_list = []
         for v in qs:
-            unit = inv_map.get(v.UnitID)
+            unit = v.unit
             if norm['blood_group'] and (not unit or unit.BloodGroup != norm['blood_group']):
                 continue
             if norm['item_type'] and (not unit or unit.Type != norm['item_type']):
@@ -556,8 +592,8 @@ class VerificationReportStrategy(BaseReportStrategy):
         ledger = [
             {
                 "verificationId": v.VerificationID,
-                "unitId": v.UnitID,
-                "donorId": v.DonorID,
+                "unitId": v.unit_id,
+                "donorId": v.donor_id,
                 "bloodGroup": unit.BloodGroup if unit else "-",
                 "type": unit.Type if unit else "-",
                 "date": v.Date.isoformat(),
@@ -591,13 +627,12 @@ class DisposalReportStrategy(BaseReportStrategy):
     def generate(self, days=None, filters=None):
         norm = _normalize_report_filters(days, filters)
         qs = _apply_query_filters(
-            Disposal.objects.all(), norm, date_field='DisposalDate', has_blood_group=False, has_item_type=False
+            Disposal.objects.select_related('unit'), norm, date_field='DisposalDate', has_blood_group=False, has_item_type=False
         ).order_by('-DisposalDate', '-CreatedAt')
 
-        inv_map = {u.UnitID: u for u in Inventory.objects.all()}
         disp_list = []
         for dp in qs:
-            unit = inv_map.get(dp.UnitID)
+            unit = dp.unit
             if norm['blood_group'] and (not unit or unit.BloodGroup != norm['blood_group']):
                 continue
             if norm['item_type'] and (not unit or unit.Type != norm['item_type']):
@@ -631,7 +666,7 @@ class DisposalReportStrategy(BaseReportStrategy):
 
             ledger.append({
                 "disposalId": dp.DisposalID,
-                "unitId": dp.UnitID,
+                "unitId": dp.unit_id,
                 "bloodGroup": unit.BloodGroup if unit else "-",
                 "type": unit.Type if unit else "-",
                 "quantity": qty,

@@ -155,7 +155,8 @@ if (form) {
       }
     } catch (err) {
       console.warn("API save error:", err);
-      showMessage("Saved (Offline fallback): " + err.message, true);
+      showMessage(err.message || "Record could not be saved", true);
+      return;
     }
 
     patients.unshift({
@@ -191,6 +192,8 @@ async function deletePatient(patientId) {
     }
   } catch (err) {
     console.warn("API delete error:", err);
+    showMessage(err.message || "Delete failed", true);
+    return;
   }
 
   patients = patients.filter(p => p.patientId !== patientId);

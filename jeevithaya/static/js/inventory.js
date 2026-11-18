@@ -35,7 +35,7 @@ function isExpired(expiry) {
 }
 
 function statusClass(s) {
-  if (s === "Expired") return "urgent";
+  if (s === "Expired" || s === "Discarded") return "urgent";
   if (s === "Reserved" || s === "Issued") return "pending";
   return "done";
 }
@@ -100,7 +100,7 @@ function render(rows) {
     const realIdx = row.realIdx;
 
     const expired = isExpired(u.expiry);
-    const finalStatus = expired ? "Expired" : u.status;
+    const finalStatus = (expired && ["Available", "Reserved"].includes(u.status)) ? "Expired" : u.status;
 
     const tr = document.createElement("tr");
     tr.className = expired ? "row-expired" : "";
@@ -116,10 +116,12 @@ function render(rows) {
       <td>${u.expiry}</td>
       <td><span class="status ${statusClass(finalStatus)}">${finalStatus}</span></td>
       <td>
-        <select class="input-mini" data-unitid="${u.unitId}" data-update="${realIdx}" ${expired ? "disabled" : ""}>
+        <select class="input-mini" data-unitid="${u.unitId}" data-update="${realIdx}" ${["Issued", "Discarded"].includes(u.status) ? "disabled" : ""}>
           <option ${u.status === "Available" ? "selected" : ""}>Available</option>
           <option ${u.status === "Reserved" ? "selected" : ""}>Reserved</option>
           <option ${u.status === "Issued" ? "selected" : ""}>Issued</option>
+          <option ${u.status === "Expired" ? "selected" : ""}>Expired</option>
+          <option ${u.status === "Discarded" ? "selected" : ""}>Discarded</option>
         </select>
       </td>
       <td>
@@ -138,7 +140,7 @@ function applyFilters() {
 
   const filtered = rows.filter(({ item }) => {
     const expired = isExpired(item.expiry);
-    const finalStatus = expired ? "Expired" : item.status;
+    const finalStatus = (expired && ["Available", "Reserved"].includes(item.status)) ? "Expired" : item.status;
 
     const matchText =
       (item.unitId && item.unitId.toLowerCase().includes(q)) ||
@@ -193,7 +195,8 @@ if (form) {
       }
     } catch (err) {
       console.warn("API save error:", err);
-      showMessage("Saved (Offline fallback): " + err.message, true);
+      showMessage(err.message || "Record could not be saved", true);
+      return;
     }
 
     inventoryList.unshift({
@@ -233,6 +236,10 @@ document.getElementById("invTable")?.addEventListener("change", async (e) => {
     }
   } catch (err) {
     console.warn("API update error:", err);
+    const prev = inventoryList[Number(sel.dataset.update)];
+    if (prev) sel.value = prev.status;
+    showMessage(err.message || "Status update failed", true);
+    return;
   }
 
   const realIdx = Number(sel.dataset.update);
@@ -261,6 +268,8 @@ document.getElementById("invTable")?.addEventListener("click", async (e) => {
     }
   } catch (err) {
     console.warn("API delete error:", err);
+    showMessage(err.message || "Delete failed", true);
+    return;
   }
 
   const realIdx = Number(btn.dataset.del);

@@ -1,3 +1,11 @@
+function showMessage(text, isError = false) {
+  const el = document.getElementById("msg");
+  if (!el) return;
+  el.className = "msg " + (isError ? "err" : "ok");
+  el.textContent = text;
+  setTimeout(() => { el.textContent = ""; }, 3500);
+}
+
 const session = applyRBAC();
 if (!session) {
   // applyRBAC handles redirect
@@ -130,6 +138,8 @@ if (form) {
       }
     } catch (err) {
       console.warn("API save error:", err);
+      showMessage(err.message || "Donation could not be saved", true);
+      return;
     }
 
     donationsList.unshift({
@@ -166,6 +176,8 @@ document.getElementById("donationTable")?.addEventListener("click", async (e) =>
     }
   } catch (err) {
     console.warn("API delete error:", err);
+    showMessage(err.message || "Delete failed", true);
+    return;
   }
 
   const i = Number(btn.dataset.del);

@@ -1,46 +1,46 @@
-from django.shortcuts import render
+"""
+Page views. Every page except login/logout requires a logged-in user, and
+each page is limited to the roles shown for it in the sidebar. The browser-side
+menu hiding in rbac.js is only cosmetic; these checks are the real gate.
+"""
 
-def login(request):
-    return render(request, 'login.html')
+from django.shortcuts import redirect, render
+from django.views.decorators.csrf import ensure_csrf_cookie
 
-def dashboard(request):
-    return render(request, 'dashboard.html')
+from bloodbank.api.common import (
+    current_user, ALL_ROLES, ADMIN_ROLES, LAB_ROLES, INVENTORY_ROLES, SYSTEM_ADMIN_ONLY,
+)
 
-def donors(request):
-    return render(request, 'donors.html')
 
-def patients(request):
-    return render(request, 'patients.html')
+def page(template, roles=ALL_ROLES, public=False):
+    """Build a view that renders `template` for users holding one of `roles`."""
+    @ensure_csrf_cookie
+    def view(request):
+        if not public:
+            user = current_user(request)
+            if user is None:
+                return redirect('login_html')
+            if not user.has_role(*roles):
+                return redirect('dashboard')
+        return render(request, template)
+    view.__name__ = template.replace('.html', '')
+    return view
 
-def requests_page(request):
-    return render(request, 'requests.html')
 
-def inventory(request):
-    return render(request, 'inventory.html')
+login = page('login.html', public=True)
+logout = page('logout.html', public=True)
+index = page('index.html', public=True)
 
-def donation(request):
-    return render(request, 'donation.html')
+dashboard = page('dashboard.html')
+donors = page('donors.html')
+patients = page('patients.html')
+requests_page = page('requests.html')
+profile = page('profile.html')
+presentation = page('presentation.html')
 
-def verification(request):
-    return render(request, 'verification.html')
-
-def disposal(request):
-    return render(request, 'disposal.html')
-
-def reports(request):
-    return render(request, 'reports.html')
-
-def create_user(request):
-    return render(request, 'create_user.html')
-
-def profile(request):
-    return render(request, 'profile.html')
-
-def index(request):
-    return render(request, 'index.html')
-
-def logout(request):
-    return render(request, 'logout.html')
-
-def presentation(request):
-    return render(request, 'presentation.html')
+inventory = page('inventory.html', roles=INVENTORY_ROLES)
+donation = page('donation.html', roles=LAB_ROLES)
+verification = page('verification.html', roles=LAB_ROLES)
+disposal = page('disposal.html', roles=LAB_ROLES)
+reports = page('reports.html', roles=ADMIN_ROLES)
+create_user = page('create_user.html', roles=SYSTEM_ADMIN_ONLY)

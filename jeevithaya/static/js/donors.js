@@ -145,8 +145,9 @@ if (donorForm) {
         showMsg("Donor registered successfully in database!");
       }
     } catch (err) {
-      console.warn("API save error, saving locally:", err);
-      showMsg("Registered (Offline fallback): " + err.message, true);
+      console.warn("API save error:", err);
+      showMsg(err.message || "Donor could not be saved", true);
+      return;
     }
 
     // Add to current in-memory list & update UI
@@ -178,6 +179,8 @@ async function deleteDonor(donorId) {
     }
   } catch (err) {
     console.warn("API delete error:", err);
+    showMsg(err.message || "Delete failed", true);
+    return;
   }
 
   donors = donors.filter(d => d.id !== donorId);

@@ -136,7 +136,8 @@ if (form) {
       }
     } catch (err) {
       console.warn("API save error:", err);
-      showMessage("Recorded (Offline fallback): " + err.message, true);
+      showMessage(err.message || "Record could not be saved", true);
+      return;
     }
 
     disposalsList.unshift({
@@ -173,6 +174,8 @@ document.getElementById("disTable")?.addEventListener("click", async (e) => {
     }
   } catch (err) {
     console.warn("API delete error:", err);
+    showMessage(err.message || "Delete failed", true);
+    return;
   }
 
   const i = Number(btn.dataset.del);

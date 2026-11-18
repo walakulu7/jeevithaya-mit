@@ -4,7 +4,7 @@ from bloodbank.models import (
     User, Donor, Patient, BloodRequest, Donation,
     Inventory, Verification, Disposal
 )
-from bloodbank.views import DEFAULT_DEMO_USERS
+from bloodbank.api import DEFAULT_DEMO_USERS
 
 
 class Command(BaseCommand):
@@ -24,7 +24,7 @@ class Command(BaseCommand):
                     'ContactNo': '0112345678'
                 }
             )
-            if created or not user.Password.startswith('pbkdf2_'):
+            if created or not User.is_hashed(user.Password):
                 user.set_password(u['Password'])
                 user.save()
         self.stdout.write(self.style.SUCCESS(f"✓ Users verified: {User.objects.count()}"))
@@ -51,43 +51,56 @@ class Command(BaseCommand):
             Patient.objects.update_or_create(PatientID=p['PatientID'], defaults=p)
         self.stdout.write(self.style.SUCCESS(f"✓ Patients verified: {Patient.objects.count()}"))
 
-        # 4. Seed Inventory Units
         today = date.today()
+
+        # 4. Seed Donations (each stored unit comes from one donation)
+        sample_donations = [
+            {"DonationID": "DN101", "donor_id": "D001", "Date": today - timedelta(days=7), "BloodGroup": "O+", "Type": "Blood", "Quantity": 2, "BloodBankID": 1, "Status": "Processed"},
+            {"DonationID": "DN102", "donor_id": "D003", "Date": today - timedelta(days=10), "BloodGroup": "B-", "Type": "Plasma", "Quantity": 1, "BloodBankID": 1, "Status": "Processed"},
+            {"DonationID": "DN103", "donor_id": "D004", "Date": today - timedelta(days=21), "BloodGroup": "AB+", "Type": "Blood", "Quantity": 1, "BloodBankID": 1, "Status": "Processed"},
+            {"DonationID": "DN104", "donor_id": "D005", "Date": today - timedelta(days=3), "BloodGroup": "O-", "Type": "Blood", "Quantity": 3, "BloodBankID": 1, "Status": "Processed"},
+            {"DonationID": "DN105", "donor_id": "D002", "Date": today - timedelta(days=40), "BloodGroup": "A+", "Type": "Blood", "Quantity": 1, "BloodBankID": 1, "Status": "Processed"},
+        ]
+        for dn in sample_donations:
+            Donation.objects.update_or_create(DonationID=dn["DonationID"], defaults=dn)
+        self.stdout.write(self.style.SUCCESS(f"✓ Donations verified: {Donation.objects.count()}"))
+
+        # 5. Seed Inventory Units
         sample_inventory = [
-            {"UnitID": "U1001", "DonationID": "DN101", "DonorID": "D001", "BloodBankID": 1, "BloodGroup": "O+", "Type": "Blood", "Quantity": 2, "BatchNo": "B-2026-A1", "ExpiryDate": today + timedelta(days=28), "Status": "Available"},
-            {"UnitID": "U1002", "DonationID": "DN102", "DonorID": "D003", "BloodBankID": 1, "BloodGroup": "B-", "Type": "Plasma", "Quantity": 1, "BatchNo": "B-2026-A2", "ExpiryDate": today + timedelta(days=60), "Status": "Available"},
-            {"UnitID": "U1003", "DonationID": "DN103", "DonorID": "D004", "BloodBankID": 1, "BloodGroup": "AB+", "Type": "Blood", "Quantity": 1, "BatchNo": "B-2026-A3", "ExpiryDate": today + timedelta(days=14), "Status": "Reserved"},
-            {"UnitID": "U1004", "DonationID": "DN104", "DonorID": "D005", "BloodBankID": 1, "BloodGroup": "O-", "Type": "Blood", "Quantity": 3, "BatchNo": "B-2026-A4", "ExpiryDate": today + timedelta(days=32), "Status": "Available"},
-            {"UnitID": "U1005", "DonationID": "DN105", "DonorID": "D002", "BloodBankID": 1, "BloodGroup": "A+", "Type": "Blood", "Quantity": 1, "BatchNo": "B-2025-X9", "ExpiryDate": today - timedelta(days=5), "Status": "Expired"},
+            {"UnitID": "U1001", "donation_id": "DN101", "donor_id": "D001", "BloodBankID": 1, "BloodGroup": "O+", "Type": "Blood", "Quantity": 2, "BatchNo": "B-2026-A1", "ExpiryDate": today + timedelta(days=28), "Status": "Available"},
+            {"UnitID": "U1002", "donation_id": "DN102", "donor_id": "D003", "BloodBankID": 1, "BloodGroup": "B-", "Type": "Plasma", "Quantity": 1, "BatchNo": "B-2026-A2", "ExpiryDate": today + timedelta(days=60), "Status": "Available"},
+            {"UnitID": "U1003", "donation_id": "DN103", "donor_id": "D004", "BloodBankID": 1, "BloodGroup": "AB+", "Type": "Blood", "Quantity": 1, "BatchNo": "B-2026-A3", "ExpiryDate": today + timedelta(days=14), "Status": "Reserved"},
+            {"UnitID": "U1004", "donation_id": "DN104", "donor_id": "D005", "BloodBankID": 1, "BloodGroup": "O-", "Type": "Blood", "Quantity": 3, "BatchNo": "B-2026-A4", "ExpiryDate": today + timedelta(days=32), "Status": "Available"},
+            {"UnitID": "U1005", "donation_id": "DN105", "donor_id": "D002", "BloodBankID": 1, "BloodGroup": "A+", "Type": "Blood", "Quantity": 1, "BatchNo": "B-2025-X9", "ExpiryDate": today - timedelta(days=5), "Status": "Discarded"},
         ]
         for inv in sample_inventory:
             Inventory.objects.update_or_create(UnitID=inv['UnitID'], defaults=inv)
         self.stdout.write(self.style.SUCCESS(f"✓ Inventory units verified: {Inventory.objects.count()}"))
 
-        # 5. Seed Blood Requests
+        # 6. Seed Blood Requests
         sample_requests = [
-            {"RequestID": "REQ101", "PatientID": "P101", "HospitalID": 1, "RequestDate": today, "BloodGroup": "O+", "Type": "Blood", "Quantity": 2, "Urgency": "Critical", "Status": "Pending"},
-            {"RequestID": "REQ102", "PatientID": "P102", "HospitalID": 1, "RequestDate": today - timedelta(days=1), "BloodGroup": "A+", "Type": "Plasma", "Quantity": 1, "Urgency": "Urgent", "Status": "Approved"},
-            {"RequestID": "REQ103", "PatientID": "P103", "HospitalID": 2, "RequestDate": today - timedelta(days=2), "BloodGroup": "B-", "Type": "Blood", "Quantity": 1, "Urgency": "Normal", "Status": "Fulfilled"},
+            {"RequestID": "REQ101", "patient_id": "P101", "HospitalID": 1, "RequestDate": today, "BloodGroup": "O+", "Type": "Blood", "Quantity": 2, "Urgency": "Critical", "Status": "Pending"},
+            {"RequestID": "REQ102", "patient_id": "P102", "HospitalID": 1, "RequestDate": today - timedelta(days=1), "BloodGroup": "A+", "Type": "Plasma", "Quantity": 1, "Urgency": "Urgent", "Status": "Approved"},
+            {"RequestID": "REQ103", "patient_id": "P103", "HospitalID": 2, "RequestDate": today - timedelta(days=2), "BloodGroup": "B-", "Type": "Blood", "Quantity": 1, "Urgency": "Normal", "Status": "Fulfilled"},
         ]
         for r in sample_requests:
             BloodRequest.objects.update_or_create(RequestID=r['RequestID'], defaults=r)
         self.stdout.write(self.style.SUCCESS(f"✓ Requisitions verified: {BloodRequest.objects.count()}"))
 
-        # 6. Seed Verifications
+        # 7. Seed Verifications
         sample_verifications = [
-            {"VerificationID": "V1001", "UnitID": "U1001", "DonorID": "D001", "VerifiedBy": "Dr. Saman Kumara", "Date": today, "HIV": "Passed", "HepatitisB": "Passed", "HepatitisC": "Passed", "Syphilis": "Passed", "OverallResult": "Passed", "Notes": "Safe for clinical use"},
-            {"VerificationID": "V1002", "UnitID": "U1005", "DonorID": "D002", "VerifiedBy": "Dr. Kasun Silva", "Date": today - timedelta(days=6), "HIV": "Passed", "HepatitisB": "Failed", "HepatitisC": "Passed", "Syphilis": "Passed", "OverallResult": "Failed", "Notes": "Positive for Hep B surface antigen"},
+            {"VerificationID": "V1001", "unit_id": "U1001", "donor_id": "D001", "VerifiedBy": "Dr. Saman Kumara", "Date": today, "HIV": "Passed", "HepatitisB": "Passed", "HepatitisC": "Passed", "Syphilis": "Passed", "OverallResult": "Passed", "Notes": "Safe for clinical use"},
+            {"VerificationID": "V1002", "unit_id": "U1005", "donor_id": "D002", "VerifiedBy": "Dr. Kasun Silva", "Date": today - timedelta(days=6), "HIV": "Passed", "HepatitisB": "Failed", "HepatitisC": "Passed", "Syphilis": "Passed", "OverallResult": "Failed", "Notes": "Positive for Hep B surface antigen"},
         ]
         for v in sample_verifications:
             Verification.objects.update_or_create(VerificationID=v['VerificationID'], defaults=v)
         self.stdout.write(self.style.SUCCESS(f"✓ Verifications verified: {Verification.objects.count()}"))
 
-        # 7. Seed Disposal
+        # 8. Seed Disposal
         Disposal.objects.update_or_create(
             DisposalID="DISP1001",
             defaults={
-                "UnitID": "U1005",
+                "unit_id": "U1005",
                 "DisposalDate": today - timedelta(days=5),
                 "Reason": "Failed Verification",
                 "DisposedBy": "Senior Lab Officer",

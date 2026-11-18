@@ -1,7 +1,39 @@
 from django.db import models
 from django.core.validators import MinValueValidator, MaxValueValidator
-from django.contrib.auth.hashers import make_password, check_password
+from django.contrib.auth.hashers import make_password, check_password, identify_hasher
 from datetime import date
+
+
+# ==============================================================================
+# SHARED DOMAIN VOCABULARY (single source of truth for choice lists)
+# ==============================================================================
+
+BLOOD_GROUP_CHOICES = [
+    ('O+', 'O+'), ('O-', 'O-'),
+    ('A+', 'A+'), ('A-', 'A-'),
+    ('B+', 'B+'), ('B-', 'B-'),
+    ('AB+', 'AB+'), ('AB-', 'AB-'),
+]
+
+COMPONENT_TYPE_CHOICES = [
+    ('Blood', 'Blood'),
+    ('Plasma', 'Plasma'),
+]
+
+URGENCY_CHOICES = [
+    ('Normal', 'Normal'),
+    ('Urgent', 'Urgent'),
+    ('Critical', 'Critical'),
+]
+
+TEST_RESULT_CHOICES = [
+    ('Passed', 'Passed'),
+    ('Failed', 'Failed'),
+]
+
+
+class InvalidTransition(Exception):
+    """Raised when an entity is asked to move to a state its lifecycle forbids."""
 
 
 # ==============================================================================
@@ -11,7 +43,7 @@ from datetime import date
 class BaseAuditableEntity(models.Model):
     """
     Abstract base entity encapsulating audit timestamps.
-    Demonstrates Abstraction and Inheritance across all domain models.
+    Every domain model inherits it, so audit fields are defined exactly once.
     """
     CreatedAt = models.DateTimeField(auto_now_add=True)
     UpdatedAt = models.DateTimeField(auto_now=True)
@@ -20,17 +52,42 @@ class BaseAuditableEntity(models.Model):
         abstract = True
 
 
+class StatefulEntity(BaseAuditableEntity):
+    """
+    Abstract base for entities with a guarded status lifecycle.
+
+    Subclasses declare TRANSITIONS (current status -> allowed next statuses).
+    All status changes go through transition_to(), so no caller can put an
+    entity into a state its lifecycle forbids (Encapsulation + Template Method).
+    """
+    TRANSITIONS = {}
+
+    class Meta:
+        abstract = True
+
+    def can_transition_to(self, new_status):
+        return new_status == self.Status or new_status in self.TRANSITIONS.get(self.Status, ())
+
+    def transition_to(self, new_status):
+        if new_status == self.Status:
+            return self
+        if not self.can_transition_to(new_status):
+            allowed = ', '.join(self.TRANSITIONS.get(self.Status, ())) or 'none (final state)'
+            raise InvalidTransition(
+                f"{self._meta.verbose_name} {self.pk} cannot move from {self.Status} to {new_status}. "
+                f"Allowed next: {allowed}."
+            )
+        self.Status = new_status
+        self.save(update_fields=['Status', 'UpdatedAt'])
+        return self
+
+
 class BasePerson(BaseAuditableEntity):
     """
     Abstract base class representing common demographic and contact attributes
     shared by Donors and Patients. Demonstrates OOP Inheritance.
     """
-    BLOOD_GROUP_CHOICES = [
-        ('O+', 'O+'), ('O-', 'O-'),
-        ('A+', 'A+'), ('A-', 'A-'),
-        ('B+', 'B+'), ('B-', 'B-'),
-        ('AB+', 'AB+'), ('AB-', 'AB-'),
-    ]
+    BLOOD_GROUP_CHOICES = BLOOD_GROUP_CHOICES
 
     Name = models.CharField(max_length=100, null=False)
     BloodGroup = models.CharField(max_length=5, choices=BLOOD_GROUP_CHOICES)
@@ -54,50 +111,20 @@ class BasePerson(BaseAuditableEntity):
 
 
 # ==============================================================================
-# USER MANAGEMENT ENTITIES (Encapsulation of Authentication & Roles)
+# USER MANAGEMENT (Encapsulation of Authentication & Roles)
 # ==============================================================================
 
-class System_Admin(models.Model):
-    AdminID = models.AutoField(primary_key=True)
-    Name = models.CharField(max_length=100, null=False)
-    Role = models.CharField(max_length=50, null=True, blank=True)
-    ContactNo = models.CharField(max_length=15, null=True, blank=True)
-    Email = models.EmailField(max_length=100, unique=True)
-    Password = models.CharField(max_length=255)
-    Permissions = models.TextField(null=True, blank=True)
+class User(BaseAuditableEntity):
+    SYSTEM_ADMIN = 'system_admin'
+    HOSPITAL_ADMIN = 'hospital_admin'
+    FRONT_OFFICE = 'frontoffice_user'
+    LAB_ASSISTANT = 'lab_assistant'
 
-    class Meta:
-        db_table = 'System_Admin'
-        verbose_name = 'System Admin'
-        verbose_name_plural = 'System Admins'
-
-    def __str__(self):
-        return f"{self.Name} ({self.Email})"
-
-
-class Hospital_Admin(models.Model):
-    HospitalAdminID = models.AutoField(primary_key=True)
-    Name = models.CharField(max_length=100, null=False)
-    HospitalID = models.IntegerField(null=False)
-    ContactNo = models.CharField(max_length=15, null=True, blank=True)
-    Email = models.EmailField(max_length=100, unique=True)
-    Password = models.CharField(max_length=255)
-
-    class Meta:
-        db_table = 'Hospital_Admin'
-        verbose_name = 'Hospital Admin'
-        verbose_name_plural = 'Hospital Admins'
-
-    def __str__(self):
-        return f"{self.Name} ({self.Email})"
-
-
-class User(models.Model):
     ROLE_CHOICES = [
-        ('system_admin', 'System Admin'),
-        ('hospital_admin', 'Hospital Admin'),
-        ('frontoffice_user', 'Front Office User'),
-        ('lab_assistant', 'Lab Assistant'),
+        (SYSTEM_ADMIN, 'System Admin'),
+        (HOSPITAL_ADMIN, 'Hospital Admin'),
+        (FRONT_OFFICE, 'Front Office User'),
+        (LAB_ASSISTANT, 'Lab Assistant'),
     ]
     STATUS_CHOICES = [
         ('Active', 'Active'),
@@ -112,7 +139,6 @@ class User(models.Model):
     Status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Active')
     HospitalID = models.IntegerField(null=True, blank=True)
     ContactNo = models.CharField(max_length=15, null=True, blank=True)
-    CreatedAt = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         db_table = 'User'
@@ -128,23 +154,28 @@ class User(models.Model):
         self.Password = make_password(raw_password)
 
     def check_password(self, raw_password):
-        """Verifies candidate password with backward-compatible plain check."""
+        """Verify a candidate password against the stored hash. Plain text is never accepted."""
+        if not self.Password:
+            return False
+        return check_password(raw_password, self.Password)
+
+    @staticmethod
+    def is_hashed(value):
+        """True when value is a recognised Django password hash."""
         try:
-            if check_password(raw_password, self.Password):
-                return True
-        except Exception:
-            pass
-        if self.Password == raw_password:
-            # Upgrade legacy plaintext to secure hash on match
-            self.set_password(raw_password)
-            self.save()
+            identify_hasher(value)
             return True
-        return False
+        except (ValueError, TypeError):
+            return False
+
+    @property
+    def is_active(self):
+        return self.Status == 'Active'
 
     # Encapsulation: Role Checking
     def has_role(self, *roles):
         """Returns True if the user possesses any of the specified roles."""
-        return self.Role in roles or self.Role.replace('_', ' ').title() in roles
+        return self.Role in roles
 
 
 # ==============================================================================
@@ -189,20 +220,12 @@ class Patient(BasePerson):
     Patient entity inheriting from BasePerson.
     Encapsulates patient medical requirements and hospital tracking.
     """
-    TYPE_CHOICES = [
-        ('Blood', 'Blood'),
-        ('Plasma', 'Plasma'),
-    ]
-
-    URGENCY_CHOICES = [
-        ('Normal', 'Normal'),
-        ('Urgent', 'Urgent'),
-        ('Critical', 'Critical'),
-    ]
+    TYPE_CHOICES = COMPONENT_TYPE_CHOICES
+    URGENCY_CHOICES = URGENCY_CHOICES
 
     PatientID = models.CharField(max_length=20, primary_key=True)
     HospitalID = models.IntegerField(null=False)
-    Type = models.CharField(max_length=10, choices=TYPE_CHOICES)
+    Type = models.CharField(max_length=10, choices=COMPONENT_TYPE_CHOICES)
     Urgency = models.CharField(max_length=20, choices=URGENCY_CHOICES)
     Contact = models.CharField(max_length=15)
     Age = models.IntegerField(null=True, blank=True, validators=[MinValueValidator(0), MaxValueValidator(120)])
@@ -221,13 +244,13 @@ class Patient(BasePerson):
 
 
 # ==============================================================================
-# TRANSACTIONAL & LOGISTICAL ENTITIES
+# TRANSACTIONAL & LOGISTICAL ENTITIES (associated through foreign keys)
 # ==============================================================================
 
-class BloodRequest(BaseAuditableEntity):
+class BloodRequest(StatefulEntity):
     """
-    Represents a hospital transfusion or plasma request.
-    Encapsulates status transitions and fulfillment checks.
+    A hospital transfusion or plasma request for one registered patient.
+    Lifecycle: Pending -> Approved -> Fulfilled, with Rejected as an exit.
     """
     STATUS_CHOICES = [
         ('Pending', 'Pending'),
@@ -235,24 +258,24 @@ class BloodRequest(BaseAuditableEntity):
         ('Fulfilled', 'Fulfilled'),
         ('Rejected', 'Rejected'),
     ]
-
-    URGENCY_CHOICES = [
-        ('Normal', 'Normal'),
-        ('Urgent', 'Urgent'),
-        ('Critical', 'Critical'),
-    ]
-
-    TYPE_CHOICES = [
-        ('Blood', 'Blood'),
-        ('Plasma', 'Plasma'),
-    ]
+    TRANSITIONS = {
+        'Pending': ('Approved', 'Rejected'),
+        'Approved': ('Fulfilled', 'Rejected', 'Pending'),
+        'Rejected': ('Pending',),
+        'Fulfilled': (),
+    }
+    INITIAL_STATUSES = ('Pending', 'Approved')
+    URGENCY_CHOICES = URGENCY_CHOICES
+    TYPE_CHOICES = COMPONENT_TYPE_CHOICES
 
     RequestID = models.CharField(max_length=20, primary_key=True)
-    PatientID = models.CharField(max_length=20)
+    patient = models.ForeignKey(
+        Patient, on_delete=models.PROTECT, db_column='PatientID', related_name='requests'
+    )
     HospitalID = models.IntegerField()
     RequestDate = models.DateField()
-    BloodGroup = models.CharField(max_length=5)
-    Type = models.CharField(max_length=10, choices=TYPE_CHOICES)
+    BloodGroup = models.CharField(max_length=5, choices=BLOOD_GROUP_CHOICES)
+    Type = models.CharField(max_length=10, choices=COMPONENT_TYPE_CHOICES)
     Quantity = models.IntegerField(validators=[MinValueValidator(1), MaxValueValidator(10)])
     Urgency = models.CharField(max_length=20, choices=URGENCY_CHOICES)
     Status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Pending')
@@ -263,44 +286,41 @@ class BloodRequest(BaseAuditableEntity):
         verbose_name_plural = 'Blood Requests'
 
     def __str__(self):
-        return f"{self.RequestID} - {self.PatientID} ({self.BloodGroup} x {self.Quantity})"
+        return f"{self.RequestID} - {self.patient_id} ({self.BloodGroup} x {self.Quantity})"
 
     def approve(self):
         """Transition request to Approved state."""
-        self.Status = 'Approved'
-        self.save()
+        return self.transition_to('Approved')
 
     def fulfill(self):
-        """Transition request to Fulfilled state."""
-        self.Status = 'Fulfilled'
-        self.save()
+        """Transition request to Fulfilled state. Stock is allocated by RequestFulfillmentService."""
+        return self.transition_to('Fulfilled')
 
     def reject(self):
         """Transition request to Rejected state."""
-        self.Status = 'Rejected'
-        self.save()
+        return self.transition_to('Rejected')
+
+    def reopen(self):
+        """Send a request back to Pending for re-review."""
+        return self.transition_to('Pending')
 
 
-class Donation(models.Model):
+class Donation(BaseAuditableEntity):
     """
-    Represents an intake donation session from a registered donor.
+    An intake donation session from a registered donor.
     """
-    BLOOD_GROUP_CHOICES = [
-        ('O+', 'O+'), ('O-', 'O-'),
-        ('A+', 'A+'), ('A-', 'A-'),
-        ('B+', 'B+'), ('B-', 'B-'),
-        ('AB+', 'AB+'), ('AB-', 'AB-'),
-    ]
+    BLOOD_GROUP_CHOICES = BLOOD_GROUP_CHOICES
 
     DonationID = models.CharField(max_length=20, primary_key=True)
-    DonorID = models.CharField(max_length=20)
+    donor = models.ForeignKey(
+        Donor, on_delete=models.PROTECT, db_column='DonorID', related_name='donations'
+    )
     Date = models.DateField()
     BloodGroup = models.CharField(max_length=5, choices=BLOOD_GROUP_CHOICES)
-    Type = models.CharField(max_length=10, choices=[('Blood', 'Blood'), ('Plasma', 'Plasma')])
+    Type = models.CharField(max_length=10, choices=COMPONENT_TYPE_CHOICES)
     Quantity = models.IntegerField(validators=[MinValueValidator(1)])
     BloodBankID = models.IntegerField()
     Status = models.CharField(max_length=20, default='Pending')
-    CreatedAt = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         db_table = 'Donation'
@@ -308,27 +328,39 @@ class Donation(models.Model):
         verbose_name_plural = 'Donations'
 
     def __str__(self):
-        return f"{self.DonationID} - Donor:{self.DonorID} ({self.BloodGroup})"
+        return f"{self.DonationID} - Donor:{self.donor_id} ({self.BloodGroup})"
 
 
-class Inventory(BaseAuditableEntity):
+class Inventory(StatefulEntity):
     """
-    Represents physical verified blood/plasma units stored in cold chain.
-    Encapsulates expiry calculation and state management.
+    A physical blood/plasma unit stored in the cold chain, produced by one donation.
+    Lifecycle: Available <-> Reserved -> Issued; Expired and Discarded are exits.
     """
     STATUS_CHOICES = [
         ('Available', 'Available'),
         ('Reserved', 'Reserved'),
         ('Issued', 'Issued'),
         ('Expired', 'Expired'),
+        ('Discarded', 'Discarded'),
     ]
+    TRANSITIONS = {
+        'Available': ('Reserved', 'Issued', 'Expired', 'Discarded'),
+        'Reserved': ('Available', 'Issued', 'Expired', 'Discarded'),
+        'Expired': ('Discarded',),
+        'Issued': (),
+        'Discarded': (),
+    }
 
     UnitID = models.CharField(max_length=20, primary_key=True)
-    DonationID = models.CharField(max_length=20)
-    DonorID = models.CharField(max_length=20)
+    donation = models.ForeignKey(
+        Donation, on_delete=models.PROTECT, db_column='DonationID', related_name='units'
+    )
+    donor = models.ForeignKey(
+        Donor, on_delete=models.PROTECT, db_column='DonorID', related_name='units'
+    )
     BloodBankID = models.IntegerField()
-    BloodGroup = models.CharField(max_length=5)
-    Type = models.CharField(max_length=10, choices=[('Blood', 'Blood'), ('Plasma', 'Plasma')])
+    BloodGroup = models.CharField(max_length=5, choices=BLOOD_GROUP_CHOICES)
+    Type = models.CharField(max_length=10, choices=COMPONENT_TYPE_CHOICES)
     Quantity = models.IntegerField(validators=[MinValueValidator(1)])
     BatchNo = models.CharField(max_length=50)
     ExpiryDate = models.DateField()
@@ -351,38 +383,46 @@ class Inventory(BaseAuditableEntity):
         delta = self.ExpiryDate - date.today()
         return delta.days
 
+    def mark_available(self):
+        return self.transition_to('Available')
+
     def mark_reserved(self):
         """Reserve unit for pending hospital dispatch."""
-        self.Status = 'Reserved'
-        self.save()
+        return self.transition_to('Reserved')
 
     def mark_issued(self):
         """Issue unit to hospital."""
-        self.Status = 'Issued'
-        self.save()
+        return self.transition_to('Issued')
+
+    def mark_expired(self):
+        return self.transition_to('Expired')
+
+    def mark_discarded(self):
+        """Remove the unit from use permanently (failed screening, damage, disposal)."""
+        return self.transition_to('Discarded')
 
 
-class Verification(models.Model):
+class Verification(BaseAuditableEntity):
     """
-    Quality control & serological testing entity (HIV, Hepatitis B/C, Syphilis).
+    Quality control & serological testing of one unit (HIV, Hepatitis B/C, Syphilis).
     """
-    RESULT_CHOICES = [
-        ('Passed', 'Passed'),
-        ('Failed', 'Failed'),
-    ]
+    RESULT_CHOICES = TEST_RESULT_CHOICES
 
     VerificationID = models.CharField(max_length=20, primary_key=True)
-    UnitID = models.CharField(max_length=20)
-    DonorID = models.CharField(max_length=20)
+    unit = models.ForeignKey(
+        Inventory, on_delete=models.PROTECT, db_column='UnitID', related_name='verifications'
+    )
+    donor = models.ForeignKey(
+        Donor, on_delete=models.PROTECT, db_column='DonorID', related_name='verifications'
+    )
     VerifiedBy = models.CharField(max_length=100)
     Date = models.DateField()
-    HIV = models.CharField(max_length=20, choices=RESULT_CHOICES)
-    HepatitisB = models.CharField(max_length=20, choices=RESULT_CHOICES)
-    HepatitisC = models.CharField(max_length=20, choices=RESULT_CHOICES)
-    Syphilis = models.CharField(max_length=20, choices=RESULT_CHOICES)
-    OverallResult = models.CharField(max_length=20, choices=RESULT_CHOICES)
+    HIV = models.CharField(max_length=20, choices=TEST_RESULT_CHOICES)
+    HepatitisB = models.CharField(max_length=20, choices=TEST_RESULT_CHOICES)
+    HepatitisC = models.CharField(max_length=20, choices=TEST_RESULT_CHOICES)
+    Syphilis = models.CharField(max_length=20, choices=TEST_RESULT_CHOICES)
+    OverallResult = models.CharField(max_length=20, choices=TEST_RESULT_CHOICES)
     Notes = models.TextField(null=True, blank=True)
-    CreatedAt = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         db_table = 'Verification'
@@ -390,7 +430,7 @@ class Verification(models.Model):
         verbose_name_plural = 'Verifications'
 
     def __str__(self):
-        return f"{self.VerificationID} - Unit:{self.UnitID} ({self.OverallResult})"
+        return f"{self.VerificationID} - Unit:{self.unit_id} ({self.OverallResult})"
 
     def is_safe(self):
         """Encapsulated check to verify all serological tests passed."""
@@ -398,9 +438,9 @@ class Verification(models.Model):
         return all(t == 'Passed' for t in tests)
 
 
-class Disposal(models.Model):
+class Disposal(BaseAuditableEntity):
     """
-    Bio-waste disposal record for expired or contaminated units.
+    Bio-waste disposal record for one expired or contaminated unit.
     """
     REASON_CHOICES = [
         ('Expired', 'Expired'),
@@ -410,12 +450,13 @@ class Disposal(models.Model):
     ]
 
     DisposalID = models.CharField(max_length=20, primary_key=True)
-    UnitID = models.CharField(max_length=20)
+    unit = models.ForeignKey(
+        Inventory, on_delete=models.PROTECT, db_column='UnitID', related_name='disposals'
+    )
     DisposalDate = models.DateField()
     Reason = models.CharField(max_length=50, choices=REASON_CHOICES)
     DisposedBy = models.CharField(max_length=100)
     Notes = models.TextField(null=True, blank=True)
-    CreatedAt = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         db_table = 'Disposal'
@@ -423,4 +464,4 @@ class Disposal(models.Model):
         verbose_name_plural = 'Disposals'
 
     def __str__(self):
-        return f"{self.DisposalID} - Unit:{self.UnitID} ({self.Reason})"
+        return f"{self.DisposalID} - Unit:{self.unit_id} ({self.Reason})"

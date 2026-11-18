@@ -169,7 +169,8 @@ if (form) {
       }
     } catch (err) {
       console.warn("API save error:", err);
-      showMessage("Saved (Offline fallback): " + err.message, true);
+      showMessage(err.message || "Request could not be saved", true);
+      return;
     }
 
     requestList.unshift({
@@ -203,15 +204,22 @@ document.getElementById("requestTable")?.addEventListener("change", async (e) =>
   const reqId = sel.dataset.id;
   const newStatus = sel.value;
 
+  const idx = Number(sel.dataset.idx);
+  let issued = [];
+
   try {
     if (window.requestAPI && typeof window.requestAPI.update === "function") {
-      await window.requestAPI.update(reqId, { Status: newStatus });
+      const res = await window.requestAPI.update(reqId, { Status: newStatus });
+      issued = (res && res.units_issued) || [];
     }
   } catch (err) {
     console.warn("API update error:", err);
+    // Server refused (e.g. insufficient stock): put the dropdown back and explain
+    if (requestList[idx]) sel.value = requestList[idx].status;
+    showMessage(err.message || "Status update failed", true);
+    return;
   }
 
-  const idx = Number(sel.dataset.idx);
   if (requestList[idx]) {
     requestList[idx].status = newStatus;
   }
@@ -220,7 +228,9 @@ document.getElementById("requestTable")?.addEventListener("change", async (e) =>
   } catch {}
 
   applyFilters();
-  showMessage("Status updated ✅");
+  showMessage(issued.length
+    ? `Fulfilled ✅ Issued units: ${issued.join(", ")}`
+    : "Status updated ✅");
 });
 
 // Delete
@@ -237,6 +247,8 @@ document.getElementById("requestTable")?.addEventListener("click", async (e) => 
     }
   } catch (err) {
     console.warn("API delete error:", err);
+    showMessage(err.message || "Delete failed", true);
+    return;
   }
 
   const idx = Number(btn.dataset.del);

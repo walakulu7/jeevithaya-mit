@@ -89,6 +89,8 @@ form.addEventListener("submit", async (e) => {
       await window.userAPI.update(session.userId, updateData);
     } catch (apiErr) {
       console.warn("Backend profile update failed:", apiErr);
+      showMessage(apiErr.message || "Profile could not be updated.", true);
+      return;
     }
   }
 

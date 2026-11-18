@@ -2,13 +2,21 @@
 
 const API_BASE_URL = '/api';
 
+// Read Django's CSRF cookie so state-changing requests pass CSRF protection
+function getCsrfToken() {
+  const match = document.cookie.match(/(?:^|;\s*)csrftoken=([^;]+)/);
+  return match ? decodeURIComponent(match[1]) : '';
+}
+
 // Generic API request function
 async function apiRequest(endpoint, method = 'GET', data = null) {
+  const headers = { 'Content-Type': 'application/json' };
+  if (method !== 'GET') {
+    headers['X-CSRFToken'] = getCsrfToken();
+  }
   const options = {
     method: method,
-    headers: {
-      'Content-Type': 'application/json',
-    },
+    headers: headers,
     credentials: 'same-origin',
   };
 
@@ -25,6 +33,15 @@ async function apiRequest(endpoint, method = 'GET', data = null) {
     }
 
     const json = await response.json().catch(() => ({}));
+
+    // Session missing or expired: send the user back to the login screen
+    if (response.status === 401 && !endpoint.startsWith('/auth/')) {
+      try {
+        localStorage.removeItem('jv_session');
+        sessionStorage.removeItem('jv_session');
+      } catch (e) {}
+      window.location.href = 'login.html';
+    }
 
     if (!response.ok) {
       throw new Error(json.error || `HTTP error! status: ${response.status}`);

@@ -166,8 +166,13 @@
 
           <div class="span-2">
             <label class="label">Reason</label>
-            <input id="reason" class="input" type="text"
-              placeholder="Expired / Failed screening / Contamination" required />
+            <select id="reason" class="input" required>
+              <option value="">Select</option>
+              <option value="Expired">Expired</option>
+              <option value="Failed Verification">Failed Verification</option>
+              <option value="Contaminated">Contaminated</option>
+              <option value="Damaged">Damaged</option>
+            </select>
           </div>
 
           <div class="actions">

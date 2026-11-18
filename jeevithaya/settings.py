@@ -33,6 +33,8 @@ ALLOWED_HOSTS = ['*'] if DEBUG else os.environ.get('ALLOWED_HOSTS', '').split(',
 
 # Allow form posts from GitHub Codespaces forwarded URLs (https://<name>-8000.app.github.dev)
 CSRF_TRUSTED_ORIGINS = ['https://*.app.github.dev']
+# API callers get CSRF failures as JSON instead of an HTML error page
+CSRF_FAILURE_VIEW = 'bloodbank.api.common.csrf_failure'
 
 
 # Application definition
