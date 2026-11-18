@@ -152,6 +152,16 @@ class OOPServiceAndPolymorphismTests(TestCase):
         context.set_strategy(RequestReportStrategy())
         self.assertIn("total_requests", context.execute())
 
+    def test_expired_count_excludes_units_no_longer_in_storage(self):
+        make_unit("U_EXP_HELD", days=-3, status="Expired")
+        make_unit("U_EXP_STALE", days=-3, status="Available")
+        make_unit("U_EXP_GONE", days=-3, status="Discarded")
+        make_unit("U_EXP_SENT", days=-3, status="Issued")
+        report = InventoryReportStrategy().generate()
+        self.assertEqual(report["summary"]["expiredRecords"], 2)
+        o_pos = next(r for r in report["componentMatrix"] if r["bloodGroup"] == "O+")
+        self.assertEqual(o_pos["expiredUnits"], 2)
+
     def test_base_service_is_abstract_and_shared(self):
         with self.assertRaises(TypeError):
             BaseService()

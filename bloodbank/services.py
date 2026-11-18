@@ -273,7 +273,12 @@ class InventoryReportStrategy(BaseReportStrategy):
         available_units = sum(u.Quantity for u in units if u.Status == 'Available' and u.ExpiryDate >= today)
         reserved_units = sum(u.Quantity for u in units if u.Status == 'Reserved')
         issued_units = sum(u.Quantity for u in units if u.Status == 'Issued')
-        expired_units_list = [u for u in units if u.Status == 'Expired' or u.ExpiryDate < today]
+        # Expired stock still held in storage: marked Expired, or past expiry but not yet
+        # issued or discarded. Issued and Discarded units have left cold storage.
+        def in_storage_expired(u):
+            return u.Status == 'Expired' or (u.Status in ('Available', 'Reserved') and u.ExpiryDate < today)
+
+        expired_units_list = [u for u in units if in_storage_expired(u)]
         expired_count = len(expired_units_list)
         expired_qty = sum(u.Quantity for u in expired_units_list)
 
@@ -285,7 +290,7 @@ class InventoryReportStrategy(BaseReportStrategy):
             avail_blood = sum(u.Quantity for u in bg_units if u.Type == 'Blood' and u.Status == 'Available' and u.ExpiryDate >= today)
             avail_plasma = sum(u.Quantity for u in bg_units if u.Type == 'Plasma' and u.Status == 'Available' and u.ExpiryDate >= today)
             reserved_bg = sum(u.Quantity for u in bg_units if u.Status == 'Reserved')
-            expired_bg = sum(u.Quantity for u in bg_units if u.Status == 'Expired' or u.ExpiryDate < today)
+            expired_bg = sum(u.Quantity for u in bg_units if in_storage_expired(u))
             breakdown[bg] = avail_blood + avail_plasma
             component_matrix.append({
                 "bloodGroup": bg,
