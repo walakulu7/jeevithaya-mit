@@ -92,6 +92,7 @@ class InventoryService(BaseService):
         return Disposal.objects.create(
             DisposalID=next_sequential_id(Disposal, 'DISP'),
             unit=unit,
+            verification=verification,
             DisposalDate=date.today(),
             Reason='Failed Verification',
             DisposedBy=verification.VerifiedBy,

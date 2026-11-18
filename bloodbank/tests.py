@@ -290,6 +290,28 @@ class RESTAPITests(ApiTestCase):
         self.assertEqual(Inventory.objects.get(pk="U_V").Status, "Discarded")
         self.assertTrue(Disposal.objects.filter(unit_id="U_V").exists())
 
+    def test_disposal_shows_donor_and_linked_screening(self):
+        make_unit("U_DL", donor_id="D_DL")
+        self.post("/api/verifications/", {"VerificationID": "V_DL", "UnitID": "U_DL", "VerifiedBy": "Lab",
+                                          "Date": str(date.today()), "OverallResult": "Fail"})
+        row = next(d for d in self.client.get("/api/disposals/").json() if d["UnitID"] == "U_DL")
+        self.assertEqual((row["DonorID"], row["VerificationID"]), ("D_DL", "V_DL"))
+
+    def test_manual_disposal_links_must_match_the_unit(self):
+        make_unit("U_M1", donor_id="D_M1", days=-1, status="Expired")
+        make_unit("U_M2", donor_id="D_M2")
+        other = Verification.objects.create(
+            VerificationID="V_M2", unit_id="U_M2", donor_id="D_M2", VerifiedBy="Lab", Date=date.today(),
+            HIV="Passed", HepatitisB="Passed", HepatitisC="Passed", Syphilis="Passed", OverallResult="Passed")
+        base = {"DisposalID": "DISP_M", "UnitID": "U_M1", "DisposalDate": str(date.today()),
+                "Reason": "Expired", "DisposedBy": "Lab"}
+        self.assertEqual(self.post("/api/disposals/", {**base, "DonorID": "D_M2"}).status_code, 400)
+        self.assertEqual(self.post("/api/disposals/", {**base, "VerificationID": other.pk}).status_code, 400)
+        ok = self.post("/api/disposals/", {**base, "DonorID": "D_M1"})
+        self.assertEqual(ok.status_code, 201, ok.content)
+        self.assertEqual(ok.json()["DonorID"], "D_M1")
+        self.assertEqual(Inventory.objects.get(pk="U_M1").Status, "Discarded")
+
     def test_inventory_status_change_follows_lifecycle(self):
         make_unit("U_ST")
         self.assertEqual(self.put("/api/inventory/U_ST/", {"Status": "Issued"}).status_code, 200)

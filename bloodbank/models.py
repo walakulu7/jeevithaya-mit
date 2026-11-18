@@ -453,6 +453,11 @@ class Disposal(BaseAuditableEntity):
     unit = models.ForeignKey(
         Inventory, on_delete=models.PROTECT, db_column='UnitID', related_name='disposals'
     )
+    verification = models.ForeignKey(
+        Verification, on_delete=models.SET_NULL, null=True, blank=True,
+        db_column='VerificationID', related_name='disposals',
+        help_text='The failed screening that led to this disposal, if any.',
+    )
     DisposalDate = models.DateField()
     Reason = models.CharField(max_length=50, choices=REASON_CHOICES)
     DisposedBy = models.CharField(max_length=100)
@@ -465,3 +470,16 @@ class Disposal(BaseAuditableEntity):
 
     def __str__(self):
         return f"{self.DisposalID} - Unit:{self.unit_id} ({self.Reason})"
+
+    @property
+    def donor_id(self):
+        """The donor is the unit's donor; it is navigated, not stored twice."""
+        return self.unit.donor_id if self.unit_id else None
+
+    def clean(self):
+        """A linked screening must be for the same unit being disposed of."""
+        from django.core.exceptions import ValidationError
+        if self.verification_id and self.unit_id and self.verification.unit_id != self.unit_id:
+            raise ValidationError({'verification': (
+                f"Verification {self.verification_id} is for unit {self.verification.unit_id}, not {self.unit_id}."
+            )})

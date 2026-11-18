@@ -131,6 +131,24 @@ class DisposalResource(ModelResource):
     read_roles = LAB_ROLES
     write_roles = LAB_ROLES
 
+    def queryset(self):
+        return Disposal.objects.select_related('unit')
+
+    def serialize(self, obj):
+        data = model_to_dict(obj)
+        data['DonorID'] = obj.donor_id  # derived from the unit
+        return data
+
+    def prepare(self, request, data, instance=None):
+        donor_id = (data.get('DonorID') or data.get('donorId') or '').strip()
+        prepared = super().prepare(request, data, instance)
+        unit_id = prepared.get('unit_id') or (instance.unit_id if instance else None)
+        if donor_id and unit_id:
+            unit = Inventory.objects.filter(pk=unit_id).first()
+            if unit and unit.donor_id != donor_id:
+                raise ApiError(f"Unit {unit_id} belongs to donor {unit.donor_id}, not {donor_id}.", 400)
+        return prepared
+
     def perform_create(self, request, data):
         disposal = super().perform_create(request, data)
         container.services.inventory.record_disposal(disposal)

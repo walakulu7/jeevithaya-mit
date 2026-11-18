@@ -125,9 +125,11 @@ if (form) {
       UnitID: unitId,
       DisposalDate: date,
       Reason: reason,
-      DisposedBy: disposedBy,
-      Notes: `Donor: ${donorId}, Ver: ${verificationId}`
+      DisposedBy: disposedBy
     };
+    // Optional links: the server checks they match the unit
+    if (donorId && donorId !== "-") payload.DonorID = donorId;
+    if (verificationId && verificationId !== "-") payload.VerificationID = verificationId;
 
     try {
       if (window.disposalAPI && typeof window.disposalAPI.create === "function") {
